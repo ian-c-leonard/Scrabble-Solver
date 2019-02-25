@@ -1,3 +1,8 @@
+import numpy as np
+from constants import WORDS
+from lexpy.dawg import DAWG
+from collections import Counter
+
 class Scrabble():
     def __init__(self, size = 15, multipliers = None):
         assert size % 2, 'Board length must be odd.'
