@@ -3,177 +3,158 @@ from constants import WORDS
 from lexpy.dawg import DAWG
 from collections import Counter
 
+
 class Scrabble():
-    def __init__(self, size = 15, multipliers = None):
+    def __init__(self, size=15, multipliers=None):
         print('Initializing Scrabble...')
         assert size % 2, 'Board length must be odd.'
-        self.agent = 0 # The agent's turn
-        self.turn = 1 # What turn we're on
-        self.words = WORDS # List of Scrabble words
-        self.size = size # Size of the board
+        self.agent = 0  # The agent's turn
+        self.turn = 1  # What turn we're on
+        self.words = WORDS  # List of Scrabble words
+        self.size = size  # Size of the board
         self.center = (size // 2, size // 2)
-        self.board = np.array(['']*size**2, dtype = object).reshape(size, size)
+        self.board = np.array([''] * size ** 2, dtype=object).reshape(size, size)
         self.multipliers = multipliers if multipliers else self._default_multipliers()
-        self.counted_words = np.zeros((size, size), dtype = int)
-        self.tiles  = ['A']*9 + ['B']*2 + ['C']*2 + ['D']*4 + ['E']*12 + ['F']*2 + \
-                      ['G']*3 + ['H']*2 + ['I']*9 + ['J']*1 + ['K']*1 + ['L']*4 + \
-                      ['M']*2 + ['N']*6 + ['O']*8 + ['P']*2 + ['Q']*1 + ['R']*6 + \
-                      ['S']*4 + ['T']*6 + ['U']*4 + ['V']*2 + ['W']*2 + ['X']*1 + \
-                      ['Y']*2 + ['Z']*1 + ['BLANK']*2
+        self.counted_words = np.zeros((size, size), dtype=int)
+        self.tiles = ['A'] * 9 + ['B'] * 2 + ['C'] * 2 + ['D'] * 4 + ['E'] * 12 + ['F'] * 2 + \
+                     ['G'] * 3 + ['H'] * 2 + ['I'] * 9 + ['J'] * 1 + ['K'] * 1 + ['L'] * 4 + \
+                     ['M'] * 2 + ['N'] * 6 + ['O'] * 8 + ['P'] * 2 + ['Q'] * 1 + ['R'] * 6 + \
+                     ['S'] * 4 + ['T'] * 6 + ['U'] * 4 + ['V'] * 2 + ['W'] * 2 + ['X'] * 1 + \
+                     ['Y'] * 2 + ['Z'] * 1 + ['BLANK'] * 2
         self.score_map = {'A': 1, 'B': 3, 'C': 3, 'D': 2, 'E': 1, 'F': 4, 'G': 2, 'H': 4,
-                       'I': 1, 'J': 8, 'K': 5, 'L': 1, 'M': 3, 'N': 1, 'O': 1, 'P': 3, 
-                       'Q': 10, 'R': 1, 'S': 1, 'T': 1, 'U': 1, 'V': 4, 'W': 4, 'X': 8, 
-                       'Y': 4, 'Z': 10, 'BLANK': 0}
+                          'I': 1, 'J': 8, 'K': 5, 'L': 1, 'M': 3, 'N': 1, 'O': 1, 'P': 3,
+                          'Q': 10, 'R': 1, 'S': 1, 'T': 1, 'U': 1, 'V': 4, 'W': 4, 'X': 8,
+                          'Y': 4, 'Z': 10, 'BLANK': 0}
         print('Optimizing Word Dictionary...')
-        self.dawg = self._optimize_scrabble_words() # Optimize Scrabble words with a lookup dictionary
+        self.dawg = self._optimize_scrabble_words()  # Optimize Scrabble words with a lookup dictionary
         print('Initalizing Agents...')
         self.agents = self._initialize_agents()
         print('Done')
-        
-    
+
     def _initialize_agents(self):
         global agent_1
         global agent_2
-        
+
         agent_1 = Agent(self, 1)
         agent_2 = Agent(self, 2)
-    
+
         return [agent_1, agent_2]
-    
-        
+
     def _optimize_scrabble_words(self):
         '''Initializes a Trie of all possible Scrabble words for optimized lookups.'''
         dawg = DAWG()
         dawg.add_all(WORDS)
-    
+
         return dawg
-    
-            
+
     def _default_multipliers(self):
         quadrant = \
-        [['3W', '', '', '2L', '', '', '', '3W'],
-        ['', '2W', '', '', '', '3L', '', ''],
-        ['', '', '2W', '', '', '', '2L', ''],
-        ['2L', '', '', '2W', '', '', '', '2L'],
-        ['', '', '', '', '2W', '', '', ''],
-        ['', '3L', '', '', '', '3L', '', ''],
-        ['', '', '2L', '', '', '', '2L', ''],
-        ['3W', '', '', '2L', '', '', '', '2W']]
+            [['3W', '', '', '2L', '', '', '', '3W'],
+             ['', '2W', '', '', '', '3L', '', ''],
+             ['', '', '2W', '', '', '', '2L', ''],
+             ['2L', '', '', '2W', '', '', '', '2L'],
+             ['', '', '', '', '2W', '', '', ''],
+             ['', '3L', '', '', '', '3L', '', ''],
+             ['', '', '2L', '', '', '', '2L', ''],
+             ['3W', '', '', '2L', '', '', '', '2W']]
 
-        quadrant = quadrant + quadrant[len(quadrant)-2::-1]
+        quadrant = quadrant + quadrant[len(quadrant) - 2::-1]
         multipliers = [y + y[::-1][1:] for y in quadrant]
-        return np.array(multipliers, dtype = object).reshape(self.size, self.size)
-    
-   
+        return np.array(multipliers, dtype=object).reshape(self.size, self.size)
 
     def is_over(self):
         out_of_words = not self.tiles and any([not agent.tiles for agent in self.agents])
-        
+
         out_of_possible_moves = any([agent.out_of_moves for agent in self.agents])
-        
+
         if out_of_words or out_of_plays:
             return True
-        
+
         return False
-    
-            
-        
+
     def unplayed_indices(self, indices):
         return not all([self.counted_words[index] for index in indices])
-    
-    
+
     def valid_word(self, word):
         return word in self.dawg
-    
-        
-    def place(self, word, indices, mock = False):
+
+    def place(self, word, indices, mock=False):
         '''Place a word in a location on the board.
            You can mock placements and return the would-be board state'''
-        
+
         board = self.board.copy() if mock else self.board
-        
+
         for count, ind in enumerate(indices):
             board[ind] = word[count]
-        
-        if mock: # We want to actually return the board if it's a mock placement
+
+        if mock:  # We want to actually return the board if it's a mock placement
             return board
 
-    
-
-        
-    
     def is_valid_placement(self, word, indices):
         '''Checks if placing a word here would be a valid placement.'''
-        
+
         if self.turn == 1:
             if not self.center in indices:
                 return False
-        
+
         else:
             # Overlapping letters must be the same and at least one letter must overlapp
             for count, ind in enumerate(indices):
                 if self.board[ind] == word[count]:
                     break
 
-                return False            
+                return False
 
             created_words = self.get_created_word_indices(word, indices)
 
             for word in created_words.keys():
                 if not self.valid_word(word):
                     return False
-            
+
         return True
-    
-    
+
     def placement_score(self, word, indices):
         '''Returns the score of a word being placed and a specified index'''
-        
+
         # Check word is long enough
         assert self.valid_word(word) > 1, 'Not a long enough word, dumbass.'
-        
+
         # Check word is placed in a valid location
         assert all([board[ind] == word[ind] or not board[ind] for ind in indices]), 'Not a valid move, dumbass.'
-        
+
         created_indices = self.get_created_word_indices(word, indices)
         assert all([self.valid_word(x) for x in created_indices]), 'You created invalid words, dumbass.'
-        
+
         multipliers = [multipliers[ind] for ind in created_indices if multipliers[ind]]
-        
-        
-    
-
-
 
     # Word, Indices --> Score
     def score(self, word, indices):
         '''Returns the score of a word at a given index'''
-        
+
         base_word_score = [self.score_map[letter] for letter in word]
         board_scores = [self.multipliers[ind] for ind in indices]
-        
+
         word_multiplier = 1
-        
+
         for ind, score in enumerate(board_scores):
             if score == '3W':
                 word_multiplier *= 3
                 continue
-            
+
             if score == '2W':
                 word_multiplier *= 2
                 continue
-                
+
             if score == '3L':
                 base_word_score[ind] *= 3
                 continue
-                
+
             if score == '2L':
                 base_word_score[ind] *= 2
                 continue
-            
+
         return sum(base_word_score) * word_multiplier
-    
-   
+
 
 class Agent():
     def __init__(self, scrabble, number):
@@ -182,36 +163,34 @@ class Agent():
         self.tiles = []
         self.opponent_tiles = []
         self.out_of_moves = False
-        #print(f"AGENT_{self.number}: Drawing Tiles And Guessing Opponent's Tiles")
-        #print "test"
+        # print(f"AGENT_{self.number}: Drawing Tiles And Guessing Opponent's Tiles")
+        # print "test"
         self.draw()
         self.guess_opponent_tiles()
-     
-    
+
     def draw(self):
-        '''Draw from the global game's tile bag'''
+        """Draw from the global game's tile bag"""
         n_missing = 7 - len(self.tiles)
-        drawn_tiles = list(np.random.choice(self.game.tiles, n_missing, replace = False))
-        
+        drawn_tiles = list(np.random.choice(self.game.tiles, n_missing, replace=False))
+
         for x in drawn_tiles:
             self.game.tiles.remove(x)
-        
+
         self.tiles = drawn_tiles
-        
+
     def guess_opponent_tiles(self):
         """Guess opponent's tiles given the current distribution of tiles"""
-        self.opponent_tiles = np.random.choice(self.game.tiles, 7, replace = False)
-        
+        self.opponent_tiles = np.random.choice(self.game.tiles, 7, replace=False)
+
     def move(self):
         pass
-    
-    
+
     def get_created_word_indices(self, word, indices):
         '''Returns the indices of all newly createds from placing a word in a position'''
 
         size = self.game.size
-        new_board = self.place(word, indices, mock = True)
-        horizontal = len(set([x[0] for x in indices])) == 1 # Word is being played horizontally
+        new_board = self.place(word, indices, mock=True)
+        horizontal = len(set([x[0] for x in indices])) == 1  # Word is being played horizontally
         word_indices = []
 
         if horizontal:
@@ -237,7 +216,6 @@ class Agent():
                         if len(longest_indices) > 1:
                             word_indices.append(longest_indices)
                         break
-
 
             # Get all horizontal words created
             curr_row = [(row, x) for x in range(size)]
@@ -282,7 +260,6 @@ class Agent():
                             word_indices.append(longest_indices)
                         break
 
-
             # Get the vertical word created
             curr_col = [(x, col) for x in range(size)]
             longest_indices = []
@@ -302,20 +279,18 @@ class Agent():
                     word_indices.append(longest_indices)
                     break
 
-        
         word_indices = [indices for indices in word_indices if self.unplayed_indices(indices)]
 
         print(word_indices)
         return [{''.join([new_board[ind] for ind in indices]): indices} for indices in word_indices]
-    
+
     def get_grids(self):
         board = self.game.board.copy()
         rows = [board[i] for i in range(self.game.size)]
         cols = [board[:][i] for i in range(self.game.size)]
-        
-        return  rows + cols
-        
-    
+
+        return rows + cols
+
     def grid_optimizer(self, letters, grid, indices):
         ## Rework grid_optimizer to take in a max_length grid (i.e. 12) and then find the largest word that CAN fit in said grid
         ## i.e. [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '] --> CATS ( potentially)
@@ -327,8 +302,8 @@ class Agent():
 
         counter = Counter(letters + [x for x in grid if x])
 
-        playable_words = [word for word in result if 
-                               all([counter[letter] >= sum([1 for x in word if x == letter]) for letter in word])]
+        playable_words = [word for word in result if
+                          all([counter[letter] >= sum([1 for x in word if x == letter]) for letter in word])]
 
         max_word = (None, -np.inf)
         for word in playable_words:
@@ -341,82 +316,75 @@ class Agent():
             score = self.score(word, indices[start: start + len(word)])
             if score > max_word[1]:
                 max_word = (word, score)
-                
+
         # Return max score of playable words with givin indices
         return max_word[0]
-    
-    
-    def place(self, word, indices, mock = False):
+
+    def place(self, word, indices, mock=False):
         '''Place a word in a location on the board.
            You can mock placements and return the would-be board state'''
-        
+
         board = self.game.board.copy() if mock else self.game.board
-        
+
         for count, ind in enumerate(indices):
             board[ind] = word[count]
-        
-        if mock: # We want to actually return the board if it's a mock placemenent
+
+        if mock:  # We want to actually return the board if it's a mock placemenent
             return board
-
-
 
 
 class View():
     def __init__(self, scrabble, number):
         self.game = scrabble
-        self.number = number                                                                                                                                                            
-
+        self.number = number
 
     def visualize_rack(self):
-        #Letters from: http://patorjk.com/software/taag/#p=display&f=Blocks&t=e
-        title = "Welcome to\n"\
-                " .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .----------------.\n"\
-                "| .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |\n"\
-                "| |    _______   | || |     ______   | || |  _______     | || |      __      | || |   ______     | || |   ______     | || |   _____      | || |  _________   | |\n"\
-                "| |   /  ___  |  | || |   .' ___  |  | || | |_   __ \    | || |     /  \     | || |  |_   _ \    | || |  |_   _ \    | || |  |_   _|     | || | |_   ___  |  | |\n"\
-                "| |  |  (__ \_|  | || |  / .'   \_|  | || |   | |__) |   | || |    / /\ \    | || |    | |_) |   | || |    | |_) |   | || |    | |       | || |   | |_  \_|  | |\n"\
-                "| |   '.___`-.   | || |  | |         | || |   |  __ /    | || |   / ____ \   | || |    |  __'.   | || |    |  __'.   | || |    | |   _   | || |   |  _|  _   | |\n"\
-                "| |  |`\____) |  | || |  \ `.___.'\  | || |  _| |  \ \_  | || | _/ /    \ \_ | || |   _| |__) |  | || |   _| |__) |  | || |   _| |__/ |  | || |  _| |___/ |  | |\n"\
-                "| |  |_______.'  | || |   `._____.'  | || | |____| |___| | || ||____|  |____|| || |  |_______/   | || |  |_______/   | || |  |________|  | || | |_________|  | |\n"\
-                "| |              | || |              | || |              | || |              | || |              | || |              | || |              | || |              | |\n"\
-                "| '--------------' || '--------------' || '--------------' || '--------------' || '--------------' || '--------------' || '--------------' || '--------------' |\n"\
-                " '----------------'  '----------------'  '----------------'  '----------------'  '----------------'  '----------------'  '----------------'  '----------------' "                                                                                                                                                        
+        # Letters from: http://patorjk.com/software/taag/#p=display&f=Blocks&t=e
+        title = "Welcome to\n" \
+                " .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .----------------.\n" \
+                "| .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |\n" \
+                "| |    _______   | || |     ______   | || |  _______     | || |      __      | || |   ______     | || |   ______     | || |   _____      | || |  _________   | |\n" \
+                "| |   /  ___  |  | || |   .' ___  |  | || | |_   __ \    | || |     /  \     | || |  |_   _ \    | || |  |_   _ \    | || |  |_   _|     | || | |_   ___  |  | |\n" \
+                "| |  |  (__ \_|  | || |  / .'   \_|  | || |   | |__) |   | || |    / /\ \    | || |    | |_) |   | || |    | |_) |   | || |    | |       | || |   | |_  \_|  | |\n" \
+                "| |   '.___`-.   | || |  | |         | || |   |  __ /    | || |   / ____ \   | || |    |  __'.   | || |    |  __'.   | || |    | |   _   | || |   |  _|  _   | |\n" \
+                "| |  |`\____) |  | || |  \ `.___.'\  | || |  _| |  \ \_  | || | _/ /    \ \_ | || |   _| |__) |  | || |   _| |__) |  | || |   _| |__/ |  | || |  _| |___/ |  | |\n" \
+                "| |  |_______.'  | || |   `._____.'  | || | |____| |___| | || ||____|  |____|| || |  |_______/   | || |  |_______/   | || |  |________|  | || | |_________|  | |\n" \
+                "| |              | || |              | || |              | || |              | || |              | || |              | || |              | || |              | |\n" \
+                "| '--------------' || '--------------' || '--------------' || '--------------' || '--------------' || '--------------' || '--------------' || '--------------' |\n" \
+                " '----------------'  '----------------'  '----------------'  '----------------'  '----------------'  '----------------'  '----------------'  '----------------' "
         print (title)
 
         player_rack = Agent(self.game, self.number).tiles
         fake_rack = ['A', 'B', 'C', 'B', 'A', 'B', 'C']
         fake_board = [['E', 'S', 'K', 'E', 'E', 'T', 'I', 'T', '', '', '', '', '', '', ''],
-                     ['', '', '', '', 'S', '', '', '', '', '', '', '', '', '', ''],
-                     ['', '', '', '', 'K', '', '', '', '', '', '', '', '', '', ''],
-                     ['', '', '', '', 'E', '', '', '', '', '', '', '', '', '', ''],
-                     ['', '', '', '', 'E', '', '', '', '', '', '', '', '', '', ''],
-                     ['', '', '', '', 'T', '', '', '', '', '', '', '', '', '', ''],
-                     ['', '', '', '', 'I', '', '', '', '', '', '', '', '', '', ''],
-                     ['', '', '', '', 'T', '', '', 'star', '', '', '', '', '', '', ''],
-                     ['', '', '', '', '', '', 'B', 'O', 'O', 'B', 'S', '', '', '', ''],
-                     ['', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-                     ['', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-                     ['', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-                     ['', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-                     ['', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-                     ['', '', '', '', '', '', '', '', '', 'A', 'S', 'T', 'A', 'R', ''],]
+                      ['', '', '', '', 'S', '', '', '', '', '', '', '', '', '', ''],
+                      ['', '', '', '', 'K', '', '', '', '', '', '', '', '', '', ''],
+                      ['', '', '', '', 'E', '', '', '', '', '', '', '', '', '', ''],
+                      ['', '', '', '', 'E', '', '', '', '', '', '', '', '', '', ''],
+                      ['', '', '', '', 'T', '', '', '', '', '', '', '', '', '', ''],
+                      ['', '', '', '', 'I', '', '', '', '', '', '', '', '', '', ''],
+                      ['', '', '', '', 'T', '', '', 'star', '', '', '', '', '', '', ''],
+                      ['', '', '', '', '', '', 'B', 'O', 'O', 'B', 'S', '', '', '', ''],
+                      ['', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+                      ['', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+                      ['', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+                      ['', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+                      ['', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+                      ['', '', '', '', '', '', '', '', '', 'A', 'S', 'T', 'A', 'R', ''], ]
 
-        
-        star =  [" ------------------ ", 
-                 "|         .        |",
-                 "|        / \       |",
-                 "|    ___/   \___   |",
-                 "|   '.         .'  |",
-                 "|     '.     .'    |",
-                 "|      / .'. \     |",
-                 "|     /.'   '.\    |",
-                 "|                  |",
-                 "|                  |",
-                 " ------------------ "]
+        star = [" ------------------ ",
+                "|         .        |",
+                "|        / \       |",
+                "|    ___/   \___   |",
+                "|   '.         .'  |",
+                "|     '.     .'    |",
+                "|      / .'. \     |",
+                "|     /.'   '.\    |",
+                "|                  |",
+                "|                  |",
+                " ------------------ "]
 
-
-
-        blank = [" ------------------ ", 
+        blank = [" ------------------ ",
                  "|                  |",
                  "|                  |",
                  "|                  |",
@@ -428,8 +396,7 @@ class View():
                  "|                  |",
                  " ------------------ "]
 
-
-        a = [" ------------------ ", 
+        a = [" ------------------ ",
              "| .--------------. |",
              "| |      __      | |",
              "| |     /  \     | |",
@@ -803,13 +770,12 @@ class View():
                     if tile == "star":
                         display_board += star[sub]
                     if tile == "":
-                        #TODO: add bonuses, or at least star in center
+                        # TODO: add bonuses, or at least star in center
                         display_board += blank[sub]
 
                 display_board += "\n"
 
         print (display_board)
-        
 
         display_rack = "Your Tiles\n"
         for sub in range(0, len(a)):
@@ -873,12 +839,10 @@ class View():
 
         print (display_rack)
 
+
 if __name__ == '__main__':
     game = Scrabble()
     agent = Agent(game, 1)
     view = View(game, 1)
 
     view.visualize_rack()
-
-
-
