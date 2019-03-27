@@ -95,7 +95,7 @@ class Scrabble():
         for count, ind in enumerate(indices):
             board[ind] = word[count]
         
-        if mock: # We want to actually return the board if it's a mock placemenent
+        if mock: # We want to actually return the board if it's a mock placement
             return board
 
     
@@ -182,7 +182,7 @@ class Agent():
         self.tiles = []
         self.opponent_tiles = []
         self.out_of_moves = False
-        print(f"AGENT_{self.number}: Drawing Tiles And Guessing Opponent's Tiles")
+        #print(f"AGENT_{self.number}: Drawing Tiles And Guessing Opponent's Tiles")
         #print "test"
         self.draw()
         self.guess_opponent_tiles()
