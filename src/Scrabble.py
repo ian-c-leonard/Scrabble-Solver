@@ -14,7 +14,7 @@ class Scrabble():
         self.size = size  # Size of the board
         self.center = (size // 2, size // 2)
         self.board = np.array([''] * size ** 2, dtype=object).reshape(size, size)
-        self.multipliers = multipliers if multipliers else self._default_multipliers()
+        # self.multipliers = multipliers if multipliers else self._default_multipliers()
         self.counted_words = np.zeros((size, size), dtype=int)
         self.tiles = ['A'] * 9 + ['B'] * 2 + ['C'] * 2 + ['D'] * 4 + ['E'] * 12 + ['F'] * 2 + \
                      ['G'] * 3 + ['H'] * 2 + ['I'] * 9 + ['J'] * 1 + ['K'] * 1 + ['L'] * 4 + \
