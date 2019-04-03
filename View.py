@@ -1,3 +1,6 @@
+from Agent import Agent
+
+
 class View():
     def __init__(self, scrabble, number):
         self.game = scrabble
@@ -377,7 +380,7 @@ class View():
         #print ("Fake Rack:", fake_rack)
 
         display_board = "Current Board\n"
-        for row in board:
+        for row in self.game.board:
             for sub in range(0, len(a)):
                 for tile in row:
                     if tile == "A":
@@ -444,7 +447,7 @@ class View():
 
         display_rack = "Your Tiles\n"
         for sub in range(0, len(a)):
-            for tile in fake_rack:
+            for tile in player_rack:
                 if tile == "":
                     display_rack += blank[sub]
                 if tile == "A":

@@ -1,5 +1,7 @@
+import numpy as np
 from constants import WORDS
 from lexpy.dawg import DAWG
+from Agent import Agent
 
 class Scrabble():
     def __init__(self, size=15, multipliers=None):
@@ -24,8 +26,8 @@ class Scrabble():
                           'Y': 4, 'Z': 10, 'BLANK': 0}
         print('Optimizing Word Dictionary...')
         self.dawg = self._optimize_scrabble_words()  # Optimize Scrabble words with a lookup dictionary
-        print('Initalizing Agents...')
-        self.agents = self._initialize_agents()
+        #print('Initalizing Agents...')
+        #self.agents = self._initialize_agents()
         print('Done')
 
     def _initialize_agents(self):
