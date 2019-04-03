@@ -13,9 +13,17 @@ class Agent():
         self.draw()
         self.guess_opponent_tiles()
 
-    def draw(self):
+    def draw(self, mock=False):
         """Draw from the global game's tile bag"""
         n_missing = 7 - len(self.tiles)
+
+        if mock:
+            my_tiles = []
+            temp_tiles = self.game.tiles[:]
+            for _ in range(n_missing):
+                my_tiles.append(temp_tiles.pop())
+            del temp_tiles
+            return my_tiles
 
         for _ in range(n_missing):
             self.tiles.append(self.game.tiles.pop())
