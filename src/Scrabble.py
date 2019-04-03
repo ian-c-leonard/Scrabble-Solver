@@ -23,26 +23,14 @@ class Scrabble():
                      ['Y'] * 2 + ['Z'] * 1
         if blanks:
             self.tiles += ['BLANK'] * 2
-        self.seeded_tiles = self.tiles[:]
-        shuffle(self.seeded_tiles)
+        shuffle(self.tiles)
         self.score_map = {'A': 1, 'B': 3, 'C': 3, 'D': 2, 'E': 1, 'F': 4, 'G': 2, 'H': 4,
                           'I': 1, 'J': 8, 'K': 5, 'L': 1, 'M': 3, 'N': 1, 'O': 1, 'P': 3,
                           'Q': 10, 'R': 1, 'S': 1, 'T': 1, 'U': 1, 'V': 4, 'W': 4, 'X': 8,
                           'Y': 4, 'Z': 10, 'BLANK': 0}
         print('Optimizing Word Dictionary...')
         self.dawg = self._optimize_scrabble_words()  # Optimize Scrabble words with a lookup dictionary
-        #print('Initalizing Agents...')
-        #self.agents = self._initialize_agents()
         print('Done')
-
-    def _initialize_agents(self):
-        global agent_1
-        global agent_2
-
-        agent_1 = Agent(self, 1)
-        agent_2 = Agent(self, 2)
-
-        return [agent_1, agent_2]
 
     def _optimize_scrabble_words(self):
         '''Initializes a Trie of all possible Scrabble words for optimized lookups.'''

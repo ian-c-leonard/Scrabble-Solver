@@ -16,12 +16,10 @@ class Agent():
     def draw(self):
         """Draw from the global game's tile bag"""
         n_missing = 7 - len(self.tiles)
-        drawn_tiles = list(np.random.choice(self.game.tiles, n_missing, replace=False))
+        # drawn_tiles = list(np.random.choice(self.game.tiles, n_missing, replace=False))
 
-        for x in drawn_tiles:
-            self.game.tiles.remove(x)
-
-        self.tiles = drawn_tiles
+        for _ in range(n_missing):
+            self.tiles.append(self.game.tiles.pop())
 
     def guess_opponent_tiles(self):
         """Guess opponent's tiles given the current distribution of tiles"""

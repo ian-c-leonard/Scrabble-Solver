@@ -15,7 +15,12 @@ game = Scrabble(blanks=results.b)
 agent = Agent(game, 1)
 view = View(game, 1)
 
-agent.place('BIN', [(7, 7), (7, 8), (7, 9)])
+print(game.tiles)
+print(agent.tiles)
+agent.tiles = agent.tiles[1:3]
 
+print(agent.tiles)
+agent.draw()
 
-print(game.seeded_tiles)
+print(agent.tiles)
+print(game.tiles)
