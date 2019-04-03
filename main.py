@@ -62,6 +62,9 @@ class Scrabble():
         multipliers = [y + y[::-1][1:] for y in quadrant]
         return np.array(multipliers, dtype=object).reshape(self.size, self.size)
 
+    def getAgentRack(self, agent):
+        return agent.tiles
+
     def is_over(self):
         out_of_words = not self.tiles and any([not agent.tiles for agent in self.agents])
 

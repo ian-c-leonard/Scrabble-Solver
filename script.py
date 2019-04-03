@@ -4,6 +4,8 @@ from dictionary import DICTIONARY
 
 filename = "dictionary-sorted.py"
 
+dictionary-sorted = {}
+
 dictionary-sorted = dictionary.sorted()
 
 
