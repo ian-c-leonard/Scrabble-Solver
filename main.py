@@ -1,17 +1,21 @@
-from View import View
-from Scrabble import Scrabble
-from Agent import Agent
-
-if __name__ == '__main__':
-    game = Scrabble()
-    agent = Agent(game, 1)
-    view = View(game, 1)
-
-    agent.place('BIN', [(7, 7), (7, 8), (7, 9)])
+import argparse
+from src.View import View
+from src.Scrabble import Scrabble
+from src.Agent import Agent
 
 
-    print(game.board)
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('-p', dest='port', type=int)
+parser.add_argument('-b', action='store_true')
+results = parser.parse_args()
+
+game = Scrabble(blanks=results.b)
+agent = Agent(game, 1)
+view = View(game, 1)
+
+agent.place('BIN', [(7, 7), (7, 8), (7, 9)])
 
 
-    #view.visualize_rack()
-
+print(game.seeded_tiles)

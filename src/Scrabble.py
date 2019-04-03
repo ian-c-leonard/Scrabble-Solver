@@ -1,10 +1,11 @@
 import numpy as np
-from constants import WORDS
+from random import shuffle
+from src.constants import WORDS
 from lexpy.dawg import DAWG
-from Agent import Agent
+from src.Agent import Agent
 
 class Scrabble():
-    def __init__(self, size=15, multipliers=None):
+    def __init__(self, size=15, multipliers=None, blanks=False):
         print('Initializing Scrabble...')
         assert size % 2, 'Board length must be odd.'
         self.agent = 0  # The agent's turn
@@ -19,7 +20,11 @@ class Scrabble():
                      ['G'] * 3 + ['H'] * 2 + ['I'] * 9 + ['J'] * 1 + ['K'] * 1 + ['L'] * 4 + \
                      ['M'] * 2 + ['N'] * 6 + ['O'] * 8 + ['P'] * 2 + ['Q'] * 1 + ['R'] * 6 + \
                      ['S'] * 4 + ['T'] * 6 + ['U'] * 4 + ['V'] * 2 + ['W'] * 2 + ['X'] * 1 + \
-                     ['Y'] * 2 + ['Z'] * 1 + ['BLANK'] * 2
+                     ['Y'] * 2 + ['Z'] * 1
+        if blanks:
+            self.tiles += ['BLANK'] * 2
+        self.seeded_tiles = self.tiles[:]
+        shuffle(self.seeded_tiles)
         self.score_map = {'A': 1, 'B': 3, 'C': 3, 'D': 2, 'E': 1, 'F': 4, 'G': 2, 'H': 4,
                           'I': 1, 'J': 8, 'K': 5, 'L': 1, 'M': 3, 'N': 1, 'O': 1, 'P': 3,
                           'Q': 10, 'R': 1, 'S': 1, 'T': 1, 'U': 1, 'V': 4, 'W': 4, 'X': 8,
