@@ -7,34 +7,29 @@ from datetime import datetime
 # row = ['A', 'B', 'C', '', 'D', 'E', '', '', '', 'F', '', 'G', 'H']
 row = ['', '', 'A', 'B', '', '', '', '', 'C', '']
 
+## Getting the start and end indices
 start = [0]
 end = []
-have_seen_letter = False
 for i in range(1, len(row) - 1):
     letter = row[i]
-    if letter != '':
-        have_seen_letter = True
     if letter == '' and row[i - 1] == '':
         start.append(i)
-        have_seen_letter = False
     if letter != '' and row[i - 1] == '':
         start.append(i)
     if letter != '' and row[i + 1] == '':
         end.append(i)
     if letter == '' and (((i - 1) in end) or (i - 1 == 0)) and row[i + 1] == '':
         end.append(i)
-
-# print(start)
 end.append(len(row) - 1)
-# print(end)
 
+## Getting all possible pairs
 pairs = []
 for starting_index in start:
     for ending_index in end:
         if starting_index < ending_index:
             pairs.append((starting_index, ending_index))
 
-
+## Filtering out pairs
 needed_pairs = []
 for pair in pairs:
     has_letter = False
@@ -48,6 +43,7 @@ for pair in pairs:
             needed_pairs.append(pair)
             break
 
+## Making
 constraints = []
 for pair in needed_pairs:
     constraint = []
@@ -57,4 +53,3 @@ for pair in needed_pairs:
     constraints.append((pair[1] - pair[0] + 1, constraint))
 
 print(constraints)
-
