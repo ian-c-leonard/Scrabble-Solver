@@ -2,26 +2,35 @@ from lexpy.dawg import DAWG
 from constants import WORDS
 from datetime import datetime
 
-#      0    1   2    3   4   5   6    7    8   9  10   11  12  13
-row = ['', '', 'A', '', '', '', 'G' ,'O', '', '', 'Z', '', '', '']
+row = ['', '', 'A', 'R', 'C', '', '' , '', '', 'B', '', 'C', 'A', '', '', '']
 
 # start_indices = [0, 1, 2, 4, 5, 6 9, 10]
 # end_indices = [2, 3, 4, 7, 8, 10, 11, 12, 13]
 
 row_copy = row[:]
 
-start = []
+start = [0]
 end = []
 have_seen_letter = False
-for i in range(row_copy):
+for i in range(1, len(row_copy) - 1):
     letter = row_copy[i]
-    if letter = '' and not have_seen_letter:
-        start.append(i)
-        have_seen_letter = False
     if letter != '':
         have_seen_letter = True
+    if letter == '' and row_copy[i - 1] == '':
+        start.append(i)
+        have_seen_letter = False
+    if letter != '' and row_copy[i - 1] == '':
+        start.append(i)
+
+    if letter != '' and row_copy[i + 1] == '':
+        end.append(i)
+    if letter == '' and ((i - 1) in end) and row_copy[i + 1] == '':
+        end.append(i)
+    # if letter == '' and row_copy[i + 1] == '' and have_seen_letter:
+    #     end.append(i)
 
 print(start)
+end.append(len(row_copy) - 1)
 print(end)
 
 
