@@ -29,23 +29,17 @@ for starting_index in start:
         if starting_index < ending_index:
             pairs.append((starting_index, ending_index))
 
-## Filtering out pairs
-needed_pairs = []
-for pair in pairs:
-    has_letter = False
-    has_blank = False
-    for i in range(pair[0], pair[1] + 1):
-        if row[i] == '':
-            has_blank = True
-        if row[i] !=  '':
-            has_letter = True
-        if has_letter and has_blank:
-            needed_pairs.append(pair)
-            break
+def filter_unneeded_pairs(pair):
+    section = row[pair[0]: pair[1] + 1]
+    blank_count = section.count('')
+    return blank_count < len(section) and blank_count != 0
 
-## Making
+## Filter out pairs that have all or no blanks
+pairs = [pair for pair in pairs if filter_unneeded_pairs(pair)]
+
+## Making constraints
 constraints = []
-for pair in needed_pairs:
+for pair in pairs:
     constraint = []
     for i in range(pair[0], pair[1] + 1):
         if row[i] != '':
