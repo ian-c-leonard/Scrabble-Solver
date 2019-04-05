@@ -4,6 +4,7 @@ from src.constants import WORDS
 from lexpy.dawg import DAWG
 from src.Agent import Agent
 from collections import defaultdict
+from src.word_sets import WORD_SETS
 
 class Scrabble():
     def __init__(self, size=15, multipliers=None, blanks=False):
@@ -28,8 +29,8 @@ class Scrabble():
                           'Q': 10, 'R': 1, 'S': 1, 'T': 1, 'U': 1, 'V': 4, 'W': 4, 'X': 8,
                           'Y': 4, 'Z': 10, 'BLANK': 0}
         print('Optimizing Word Dictionary...')
-        #self.dawg = self._optimize_scrabble_words()  # Optimize Scrabble words with a lookup dictionary
-        self.word_sets = self._build_word_sets()
+        self.dawg = self._optimize_scrabble_words()  # Optimize Scrabble words with a lookup dictionary
+        self.word_sets = WORD_SETS #self._build_word_sets()
         print('Done')
 
     def _optimize_scrabble_words(self):
@@ -58,7 +59,7 @@ class Scrabble():
 
         return set.intersection(*sets)
 
-    def get_constraints(self, row):
+    def get_words(self, row):
         ## Getting the start and end indices
         start = [0]
         end = []
@@ -75,9 +76,10 @@ class Scrabble():
         end.append(len(row) - 1)
 
         ## Getting all possible pairs
-        pairs = [(starting_index, ending_index) for starting_index in start for ending_index in end if starting_index < ending_index]
+        pairs = [(starting_index, ending_index) for starting_index in start 
+                     for ending_index in end if starting_index < ending_index]
 
-        def filter_unneeded_pairs(pair):
+        def filter_unneeded_pairs(pair): ## Rewrite to lambda later
             section = row[pair[0]: pair[1] + 1]
             blank_count = section.count('')
             return blank_count < len(section) and blank_count != 0
@@ -86,7 +88,10 @@ class Scrabble():
         pairs = [pair for pair in pairs if filter_unneeded_pairs(pair)]
 
         ## Making constraints
-        return [(pair[1] - pair[0] + 1, [(i - pair[0], row[i]) for i in range(pair[0], pair[1] + 1) if row[i]]) for pair in pairs]
+        constraints = [(pair[0], pair[1] - pair[0] + 1, [(i - pair[0], row[i]) for i in range(pair[0], pair[1] + 1) if row[i]]) for pair in pairs]
+        
+        return [self.satisfying_words(length, constraint) for start_i, length, constraint in constraints]
+            
 
     def _default_multipliers(self):
         quadrant = \
