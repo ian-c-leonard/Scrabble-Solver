@@ -38,26 +38,26 @@ class Scrabble():
         dawg.add_all(WORDS)
 
         return dawg
-    
+
     def _build_word_sets(self):
         word_sets = defaultdict(lambda: defaultdict(set()))
         letters = set(self.tiles)
-        
-        sets = {length: {(i, l): {w for w in self.words if len(w) == length and len(w) > i  and w[i] == l} 
+
+        sets = {length: {(i, l): {w for w in self.words if len(w) == length and len(w) > i  and w[i] == l}
                              for i in range(length) for l in letters}
                     for length in range(2, self.size + 1)}
-        
+
         word_sets.update(sets)
-        
+
         return word_sets
 
     def satisfying_words(self, length, constrains):
-        '''Given a length and a list of constraints (e.g. (5, [(1, 'A'), ... , (12, 'Z')])), 
+        '''Given a length and a list of constraints (e.g. (5, [(1, 'A'), ... , (12, 'Z')])),
            return the set of words of a given length which satisfy all of the constraints'''
         sets = [self.word_sets[length][c] for c in constrains]
-        
+
         return set.intersection(*sets)
-    
+
     def _default_multipliers(self):
         quadrant = \
             [['3W', '', '', '2L', '', '', '', '3W'],
