@@ -23,11 +23,7 @@ for i in range(1, len(row) - 1):
 end.append(len(row) - 1)
 
 ## Getting all possible pairs
-pairs = []
-for starting_index in start:
-    for ending_index in end:
-        if starting_index < ending_index:
-            pairs.append((starting_index, ending_index))
+pairs = [(starting_index, ending_index) for starting_index in start for ending_index in end if starting_index < ending_index]
 
 def filter_unneeded_pairs(pair):
     section = row[pair[0]: pair[1] + 1]
