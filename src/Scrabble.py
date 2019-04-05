@@ -16,7 +16,7 @@ class Scrabble():
         self.size = size  # Size of the board
         self.center = (size // 2, size // 2)
         self.board = np.array([''] * size ** 2, dtype=object).reshape(size, size)
-        # self.multipliers = multipliers if multipliers else self._default_multipliers()
+        self.multipliers = multipliers if multipliers else self._default_multipliers()
         self.counted_words = np.zeros((size, size), dtype=int)
         self.tiles = ['A'] * 9 + ['B'] * 2 + ['C'] * 2 + ['D'] * 4 + ['E'] * 12 + ['F'] * 2 + \
                      ['G'] * 3 + ['H'] * 2 + ['I'] * 9 + ['J'] * 1 + ['K'] * 1 + ['L'] * 4 + \
@@ -28,19 +28,21 @@ class Scrabble():
                           'I': 1, 'J': 8, 'K': 5, 'L': 1, 'M': 3, 'N': 1, 'O': 1, 'P': 3,
                           'Q': 10, 'R': 1, 'S': 1, 'T': 1, 'U': 1, 'V': 4, 'W': 4, 'X': 8,
                           'Y': 4, 'Z': 10, 'BLANK': 0}
-        print('Optimizing Word Dictionary...')
+
         self.dawg = self._optimize_scrabble_words()  # Optimize Scrabble words with a lookup dictionary
-        self.word_sets = WORD_SETS #self._build_word_sets()
+        self.word_sets = WORD_SETS or self._build_word_sets()
         print('Done')
 
     def _optimize_scrabble_words(self):
         '''Initializes a Trie of all possible Scrabble words for optimized lookups.'''
+        print('Optimizing Word Dictionary...')
         dawg = DAWG()
         dawg.add_all(WORDS)
 
         return dawg
 
     def _build_word_sets(self):
+        print('Organizeing Word Sets...')
         word_sets = defaultdict(lambda: defaultdict(set()))
         letters = set(self.tiles)
 
@@ -59,7 +61,7 @@ class Scrabble():
 
         return set.intersection(*sets)
 
-    def get_words(self, row):
+    def get_row_words(self, row, indices):
         ## Getting the start and end indices
         start = [0]
         end = []
@@ -90,8 +92,12 @@ class Scrabble():
         ## Making constraints
         constraints = [(pair[0], pair[1] - pair[0] + 1, [(i - pair[0], row[i]) for i in range(pair[0], pair[1] + 1) if row[i]]) for pair in pairs]
         
-        return [self.satisfying_words(length, constraint) for start_i, length, constraint in constraints]
-            
+        words_and_indices = [(self.satisfying_words(length, constraint), indices[start_i: start_i + length]) 
+                           for start_i, length, constraint in constraints]
+        
+        words_to_indices = {word: indices for words, indices in words_and_indices for word in words}
+        
+        return words_to_indices
 
     def _default_multipliers(self):
         quadrant = \
