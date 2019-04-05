@@ -25,4 +25,7 @@ class Minimax:
             new_state[move] = -1
             v = min(v, self.value(new_state, -agent_id))
         return v
-        
+    
+    
+    def succ(word, index):
+        return new_board
