@@ -33,7 +33,6 @@ class Scrabble():
         self.word_sets = WORD_SETS or self._build_word_sets()
         print('Initalizing Agents...')
         self.agents = self._initialize_agents()
-        self.scores = self._get_agent_scores()
         print('Done')
         
     
@@ -46,7 +45,7 @@ class Scrabble():
     
         return [agent_1, agent_2]
     
-    def _get_agent_scores(self):
+    def get_agent_scores(self):
         return {agent: agent.score for agent in self.agents}
     
     def _optimize_scrabble_words(self):
