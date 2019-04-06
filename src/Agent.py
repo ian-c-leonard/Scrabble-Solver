@@ -11,6 +11,7 @@ class Agent():
         print(f"AGENT_{self.number}: Drawing Tiles And Guessing Opponent's Tiles")
         self.draw()
         self.guess_opponent_tiles()
+        self.score = 0
      
     
     def draw(self):
@@ -210,6 +211,8 @@ class Agent():
         if mock: # We want to actually return the board if it's a mock placemenent
             return board
         
+        self.score += self.score_word(word, indices)
+        
     def validate_move(self, word, indices):
         
         #Check if agent has required tiles to form a word
@@ -227,5 +230,5 @@ class Agent():
                 if not self.game.valid_word(word):
                     return False
 
-    def score(self, word, indices):
+    def score_word(self, word, indices):
         return self.game.score(word, indices)

@@ -17,7 +17,7 @@ class Scrabble():
         self.center = (size // 2, size // 2)
         self.board = np.array([''] * size ** 2, dtype=object).reshape(size, size)
         self.multipliers = multipliers if multipliers else self._default_multipliers()
-        self.counted_words = np.zeros((size, size), dtype=int)
+        self.counted_tiles = np.zeros((size, size), dtype=int)
         self.tiles = ['A'] * 9 + ['B'] * 2 + ['C'] * 2 + ['D'] * 4 + ['E'] * 12 + ['F'] * 2 + \
                      ['G'] * 3 + ['H'] * 2 + ['I'] * 9 + ['J'] * 1 + ['K'] * 1 + ['L'] * 4 + \
                      ['M'] * 2 + ['N'] * 6 + ['O'] * 8 + ['P'] * 2 + ['Q'] * 1 + ['R'] * 6 + \
@@ -31,8 +31,24 @@ class Scrabble():
 
         self.dawg = self._optimize_scrabble_words()  # Optimize Scrabble words with a lookup dictionary
         self.word_sets = WORD_SETS or self._build_word_sets()
+        print('Initalizing Agents...')
+        self.agents = self._initialize_agents()
+        self.scores = self._get_agent_scores()
         print('Done')
-
+        
+    
+    def _initialize_agents(self):
+        global agent_1
+        global agent_2
+        
+        agent_1 = Agent(self, 1)
+        agent_2 = Agent(self, 2)
+    
+        return [agent_1, agent_2]
+    
+    def _get_agent_scores(self):
+        return {agent: agent.score for agent in self.agents}
+    
     def _optimize_scrabble_words(self):
         '''Initializes a Trie of all possible Scrabble words for optimized lookups.'''
         print('Optimizing Word Dictionary...')
@@ -40,6 +56,9 @@ class Scrabble():
         dawg.add_all(WORDS)
 
         return dawg
+    
+    def unplayed_indices(self, indices):
+        return not all([self.counted_tiles[index] for index in indices])
 
     def _build_word_sets(self):
         print('Organizeing Word Sets...')
@@ -129,46 +148,10 @@ class Scrabble():
 
         return False
 
-    def unplayed_indices(self, indices):
-        return not all([self.counted_words[index] for index in indices])
 
     def valid_word(self, word):
         return word in self.dawg
-
-    def place(self, word, indices, mock=False):
-        '''Place a word in a location on the board.
-           You can mock placements and return the would-be board state'''
-
-        board = self.board.copy() if mock else self.board
-
-        for count, ind in enumerate(indices):
-            board[ind] = word[count]
-
-        if mock:  # We want to actually return the board if it's a mock placement
-            return board
-
-    def is_valid_placement(self, word, indices):
-        '''Checks if placing a word here would be a valid placement.'''
-
-        if self.turn == 1:
-            if not self.center in indices:
-                return False
-
-        else:
-            # Overlapping letters must be the same and at least one letter must overlapp
-            for count, ind in enumerate(indices):
-                if self.board[ind] == word[count]:
-                    break
-
-                return False
-
-            created_words = self.get_created_word_indices(word, indices)
-
-            for word in created_words.keys():
-                if not self.valid_word(word):
-                    return False
-
-        return True
+    
 
     def placement_score(self, word, indices):
         '''Returns the score of a word being placed and a specified index'''
@@ -189,7 +172,7 @@ class Scrabble():
         '''Returns the score of a word at a given index'''
 
         base_word_score = [self.score_map[letter] for letter in word]
-        board_scores = [self.multipliers[ind] for ind in indices]
+        board_scores = [self.multipliers[ind] for ind in indices if not self.counted_tiles[ind]]
 
         word_multiplier = 1
 
