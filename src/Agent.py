@@ -223,7 +223,7 @@ class Agent():
                 return False
             
         # Check if all created words are valid
-        created_words = self.get_created_word_indices(*move)
+        created_words = self.get_created_word_indices(word, indices)
         return created_words
         
         for (word, indices) in created_words:
