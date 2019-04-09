@@ -12,41 +12,41 @@ class Agent():
         self.draw()
         self.guess_opponent_tiles()
         self.score = 0
-     
-    
+
+
     def draw(self):
         '''Draw from the global game's tile bag'''
         n_missing = 7 - sum(self.tiles.values())
         old_tiles = [x for l in [[tile]*num for tile, num in self.tiles.items()] for x in l] # unpacking
         drawn_tiles = list(np.random.choice(self.game.tiles, n_missing, replace = False))
-        
+
         for x in drawn_tiles:
             self.game.tiles.remove(x)
-        
+
         self.tiles = Counter(old_tiles + drawn_tiles)
-        
+
     def guess_opponent_tiles(self):
         """Guess opponent's tiles given the current distribution of tiles"""
         self.opponent_tiles = np.random.choice(self.game.tiles, 7, replace = False)
-        
+
     def get_successors(self):
         grids = self.get_grids()
         list_of_moves = [self.get_grid_words(*grid) for grid in grids]
         moves = [move for moves in list_of_moves for move in moves if self.validate_move(*move)]
         new_boards = [(move, self.place(*move, mock = True)) for move in moves]
-        
+
         return new_boards
-    
+
     def get_optimal_move(self):
         # call minimax here
         pass
-    
+
     def move(self):
         optimal_move = self.get_optimal_move()
         self.place(*optimal_move)
         self.draw()
-        
-    
+
+
     def get_created_word_indices(self, word, indices):
         '''Returns the indices of all newly createds from placing a word in a position'''
 
@@ -143,22 +143,22 @@ class Agent():
                     word_indices.append(longest_indices)
                     break
 
-        
+
         word_indices = [indices for indices in word_indices if self.game.unplayed_indices(indices)]
         return [(''.join([new_board[ind] for ind in indices]), indices) for indices in word_indices]
-    
+
     def get_grids(self):
         board = self.game.board.copy()
-        
+
         rows = [board[i] for i in range(self.game.size)]
         row_indices = [[(i, x) for x in range(self.game.size)] for i in range(self.game.size)]
         cols = [[board[x][i] for x in range(self.game.size)] for i in range(self.game.size)]
         col_indices = [[(x, i) for x in range(self.game.size)] for i in range(self.game.size)]
-        
-        
+
+
         return  list(zip(rows, row_indices)) + list(zip(cols, col_indices))
-        
-    
+
+
     def get_grid_words(self, row, indices):
         ## Getting the start and end indices
         row = list(row)
@@ -177,7 +177,7 @@ class Agent():
         end.append(len(row) - 1)
 
         ## Getting all possible pairs
-        pairs = [(starting_index, ending_index) for starting_index in start 
+        pairs = [(starting_index, ending_index) for starting_index in start
                      for ending_index in end if starting_index < ending_index]
 
         def filter_unneeded_pairs(pair): ## Rewrite to lambda later
@@ -191,41 +191,41 @@ class Agent():
         ## Making constraints
         constraints = [(pair[0], pair[1] - pair[0] + 1, [(i - pair[0], row[i]) for i in range(pair[0], pair[1] + 1) if row[i]]) for pair in pairs]
 
-        words_and_indices = [(self.game.satisfying_words(length, constraint), indices[start_i: start_i + length]) 
+        words_and_indices = [(self.game.satisfying_words(length, constraint), indices[start_i: start_i + length])
                            for start_i, length, constraint in constraints]
 
         words_to_indices = [(word, indices) for words, indices in words_and_indices for word in words]
 
         return words_to_indices
-    
-    
+
+
     def place(self, word, indices, mock = False):
         '''Place a word in a location on the board.
            You can mock placements and return the would-be board state'''
-        
+
         board = self.game.board.copy() if mock else self.game.board
-        
+
         for count, ind in enumerate(indices):
             board[ind] = word[count]
-        
+
         if mock: # We want to actually return the board if it's a mock placemenent
             return board
-        
+
         self.score += self.score_word(word, indices)
-        
+
     def validate_move(self, word, indices):
-        
+
         #Check if agent has required tiles to form a word
         required_tiles = Counter([word[i] for i, index in enumerate(indices) if word[i] != self.game.board[index]])
-        
+
         for tile in required_tiles:
             if self.tiles[tile] < required_tiles[tile]:
                 return False
-            
+
         # Check if all created words are valid
         created_words = self.get_created_word_indices(word, indices)
         return created_words
-        
+
         for (word, indices) in created_words:
                 if not self.game.valid_word(word):
                     return False

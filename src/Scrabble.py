@@ -34,20 +34,20 @@ class Scrabble():
         print('Initalizing Agents...')
         self.agents = self._initialize_agents()
         print('Done')
-        
-    
+
+
     def _initialize_agents(self):
         global agent_1
         global agent_2
-        
+
         agent_1 = Agent(self, 1)
         agent_2 = Agent(self, 2)
-    
+
         return [agent_1, agent_2]
-    
+
     def get_agent_scores(self):
         return {agent: agent.score for agent in self.agents}
-    
+
     def _optimize_scrabble_words(self):
         '''Initializes a Trie of all possible Scrabble words for optimized lookups.'''
         print('Optimizing Word Dictionary...')
@@ -55,7 +55,7 @@ class Scrabble():
         dawg.add_all(WORDS)
 
         return dawg
-    
+
     def unplayed_indices(self, indices):
         return not all([self.counted_tiles[index] for index in indices])
 
@@ -96,7 +96,7 @@ class Scrabble():
         end.append(len(row) - 1)
 
         ## Getting all possible pairs
-        pairs = [(starting_index, ending_index) for starting_index in start 
+        pairs = [(starting_index, ending_index) for starting_index in start
                      for ending_index in end if starting_index < ending_index]
 
         def filter_unneeded_pairs(pair): ## Rewrite to lambda later
@@ -109,12 +109,12 @@ class Scrabble():
 
         ## Making constraints
         constraints = [(pair[0], pair[1] - pair[0] + 1, [(i - pair[0], row[i]) for i in range(pair[0], pair[1] + 1) if row[i]]) for pair in pairs]
-        
-        words_and_indices = [(self.satisfying_words(length, constraint), indices[start_i: start_i + length]) 
+
+        words_and_indices = [(self.satisfying_words(length, constraint), indices[start_i: start_i + length])
                            for start_i, length, constraint in constraints]
-        
+
         words_to_indices = {word: indices for words, indices in words_and_indices for word in words}
-        
+
         return words_to_indices
 
     def _default_multipliers(self):
@@ -150,7 +150,7 @@ class Scrabble():
 
     def valid_word(self, word):
         return word in self.dawg
-    
+
 
     def placement_score(self, word, indices):
         '''Returns the score of a word being placed and a specified index'''
