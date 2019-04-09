@@ -16,6 +16,8 @@ class Scrabble():
         self.size = size  # Size of the board
         self.center = (size // 2, size // 2)
         self.board = np.array([''] * size ** 2, dtype=object).reshape(size, size)
+        self.agents = {}
+        self.num_agents = 0
         self.multipliers = multipliers if multipliers else self._default_multipliers()
         self.counted_tiles = np.zeros((size, size), dtype=int)
         self.tiles = ['A'] * 9 + ['B'] * 2 + ['C'] * 2 + ['D'] * 4 + ['E'] * 12 + ['F'] * 2 + \
@@ -31,22 +33,15 @@ class Scrabble():
 
         self.dawg = self._optimize_scrabble_words()  # Optimize Scrabble words with a lookup dictionary
         self.word_sets = WORD_SETS or self._build_word_sets()
-        print('Initalizing Agents...')
-        self.agents = self._initialize_agents()
         print('Done')
 
 
-    def _initialize_agents(self):
-        global agent_1
-        global agent_2
+    def add_agent(self, _id, agent):
+        self.agents[_id] = agent
+        self.num_agents += 1
 
-        agent_1 = Agent(self, 1)
-        agent_2 = Agent(self, 2)
-
-        return [agent_1, agent_2]
-
-    def get_agent_scores(self):
-        return {agent: agent.score for agent in self.agents}
+    def get_num_agents(self):
+        return self.num_agents
 
     def _optimize_scrabble_words(self):
         '''Initializes a Trie of all possible Scrabble words for optimized lookups.'''

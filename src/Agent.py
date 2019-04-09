@@ -2,9 +2,7 @@ import numpy as np
 from collections import Counter
 
 class Agent():
-    def __init__(self, scrabble, number):
-        self.game = scrabble
-        self.number = number
+    def __init__(self):
         self.tiles = {}
         self.opponent_tiles = []
         self.out_of_moves = False
@@ -14,7 +12,7 @@ class Agent():
         self.score = 0
 
 
-    def draw(self):
+    def draw(self): # TODO need to draw the tiles in the order they are
         '''Draw from the global game's tile bag'''
         n_missing = 7 - sum(self.tiles.values())
         old_tiles = [x for l in [[tile]*num for tile, num in self.tiles.items()] for x in l] # unpacking
@@ -29,7 +27,7 @@ class Agent():
         """Guess opponent's tiles given the current distribution of tiles"""
         self.opponent_tiles = np.random.choice(self.game.tiles, 7, replace = False)
 
-    def get_successors(self):
+    def get_successors(self): # TODO move to the scrabble class
         grids = self.get_grids()
         list_of_moves = [self.get_grid_words(*grid) for grid in grids]
         moves = [move for moves in list_of_moves for move in moves if self.validate_move(*move)]
@@ -37,15 +35,10 @@ class Agent():
 
         return new_boards
 
-    def get_optimal_move(self):
-        # call minimax here
-        pass
-
-    def move(self):
+    def move(self): # TODO move to scrabble
         optimal_move = self.get_optimal_move()
         self.place(*optimal_move)
         self.draw()
-
 
     def get_created_word_indices(self, word, indices):
         '''Returns the indices of all newly createds from placing a word in a position'''
