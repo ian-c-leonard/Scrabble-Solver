@@ -151,9 +151,9 @@ class Agent():
         board = self.game.board.copy()
         
         rows = [board[i] for i in range(self.game.size)]
-        row_indices = [[(i, x) for x in range(agent.game.size)] for i in range(agent.game.size)]
-        cols = [[board[x][i] for x in range(agent.game.size)] for i in range(agent.game.size)]
-        col_indices = [[(x, i) for x in range(agent.game.size)] for i in range(agent.game.size)]
+        row_indices = [[(i, x) for x in range(self.game.size)] for i in range(self.game.size)]
+        cols = [[board[x][i] for x in range(self.game.size)] for i in range(self.game.size)]
+        col_indices = [[(x, i) for x in range(self.game.size)] for i in range(self.game.size)]
         
         
         return  list(zip(rows, row_indices)) + list(zip(cols, col_indices))
