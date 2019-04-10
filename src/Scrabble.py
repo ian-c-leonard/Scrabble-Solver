@@ -1,5 +1,6 @@
 import numpy as np
 from random import shuffle
+from collections import Counter
 from src.constants import WORDS
 from lexpy.dawg import DAWG
 from src.Agent import Agent
@@ -143,6 +144,242 @@ class Scrabble():
         return False
 
 
+    def draw(self, agent_id): # TODO need to draw the tiles in the order they are
+        '''Draw from the global game's tile bag'''
+        agent = self.agents[agent_id]
+        n_missing = 7 - sum(agent.tiles.values())
+        old_tiles = [x for l in [[tile]*num for tile, num in agent.tiles.items()] for x in l] # unpacking
+        drawn_tiles = list(np.random.choice(self.tiles, n_missing, replace = False))
+
+        for x in drawn_tiles:
+            self.tiles.remove(x)
+
+        agent.tiles = Counter(old_tiles + drawn_tiles)
+
+    def place(self, word, indices, agent_id, mock = False):
+        '''Place a word in a location on the board.
+           You can mock placements and return the would-be board state'''
+
+        board = self.board.copy() if mock else self.board
+
+        for count, ind in enumerate(indices):
+            board[ind] = word[count]
+
+        if mock: # We want to actually return the board if it's a mock placemenent
+            return board
+
+        agent = self.agents[agent_id]
+        agent.score += self.word_score(word, indices)
+
+
+    def get_legal_moves(self, agent_id):  # TODO move to the scrabble class
+        grids = self.get_grids()
+        list_of_moves = [self.get_grid_words(*grid) for grid in grids]
+        moves = [move for moves in list_of_moves for move in moves if self.validate_move(*move, agent_id = agent_id)]
+        # new_boards = [(move, self.place(*move, mock = True, agent_id = agent_id)) for move in moves]
+
+        return moves
+
+
+
+
+    def get_grids(self):
+        board = self.board.copy()
+
+        rows = [board[i] for i in range(self.size)]
+        row_indices = [[(i, x) for x in range(self.size)] for i in range(self.size)]
+        cols = [[board[x][i] for x in range(self.size)] for i in range(self.size)]
+        col_indices = [[(x, i) for x in range(self.size)] for i in range(self.size)]
+
+
+        return  list(zip(rows, row_indices)) + list(zip(cols, col_indices))
+
+
+
+
+
+    def validate_move(self, word, indices, agent_id):
+
+        agent = self.agents[agent_id]
+        #Check if agent has required tiles to form a word
+        required_tiles = Counter([word[i] for i, index in enumerate(indices) if word[i] != self.board[index]])
+
+        for tile in required_tiles:
+            if agent.tiles[tile] < required_tiles[tile]:
+                return False
+
+        # Check if all created words are valid
+        created_words = self.get_created_word_indices(word, indices, agent_id = agent_id)
+        return created_words
+
+        for (word, indices) in created_words:
+                if not self.valid_word(word):
+                    return False
+
+
+
+    def get_grid_words(self, row, indices):
+        ## Getting the start and end indices
+        row = list(row)
+        start = [0]
+        end = []
+        for i in range(1, len(row) - 1):
+            letter = row[i]
+            if not letter and not row[i - 1]:
+                start.append(i)
+            if letter and not row[i - 1]:
+                start.append(i)
+            if letter and not row[i + 1]:
+                end.append(i)
+            if not letter and (((i - 1) in end) or (i - 1 == 0)) and not row[i + 1]:
+                end.append(i)
+        end.append(len(row) - 1)
+
+        ## Getting all possible pairs
+        pairs = [(starting_index, ending_index) for starting_index in start
+                     for ending_index in end if starting_index < ending_index]
+
+        def filter_unneeded_pairs(pair): ## Rewrite to lambda later
+            section = row[pair[0]: pair[1] + 1]
+            blank_count = section.count('')
+            return blank_count < len(section) and blank_count != 0
+
+        ## Filter out pairs that have all or no blanks
+        pairs = [pair for pair in pairs if filter_unneeded_pairs(pair)]
+
+        ## Making constraints
+        constraints = [(pair[0], pair[1] - pair[0] + 1, [(i - pair[0], row[i]) for i in range(pair[0], pair[1] + 1) if row[i]]) for pair in pairs]
+
+        words_and_indices = [(self.satisfying_words(length, constraint), indices[start_i: start_i + length])
+                           for start_i, length, constraint in constraints]
+
+        words_to_indices = [(word, indices) for words, indices in words_and_indices for word in words]
+
+        return words_to_indices
+
+
+
+
+
+    def get_created_word_indices(self, word, indices, agent_id):
+        '''Returns the indices of all newly createds from placing a word in a position'''
+
+        size = self.size
+        new_board = self.place(word, indices, mock = True, agent_id = agent_id)
+        horizontal = len(set([x[0] for x in indices])) == 1 # Word is being played horizontally
+        word_indices = []
+
+        if horizontal:
+            row = indices[0][0]
+
+            # Get all vertical words created
+            for _, j in indices:
+                col = [(x, j) for x in range(size)]
+                longest_indices = []
+                created = False
+
+                for index in col:
+                    if index in indices:  # The letter was just placed
+                        created = True
+
+                    if not new_board[index] and not created:
+                        longest_indices = []
+
+                    if new_board[index]:
+                        longest_indices.append(index)
+
+                    elif created:
+                        if len(longest_indices) > 1:
+                            word_indices.append(longest_indices)
+                        break
+
+
+            # Get all horizontal words created
+            curr_row = [(row, x) for x in range(size)]
+            longest_indices = []
+            created = False
+
+            for index in curr_row:
+                if index in indices:  # The letter was just placed
+                    created = True
+
+                if not new_board[index] and not created:
+                    longest_indices = []
+
+                if new_board[index]:
+                    longest_indices.append(index)
+
+                elif created:
+                    word_indices.append(longest_indices)
+                    break
+
+        else:
+            col = indices[0][1]
+
+            # Get all horizontal words created
+            for i, _ in indices:
+                row = [(i, x) for x in range(size)]
+                longest_indices = []
+                created = False
+
+                for index in row:
+                    if index in indices:  # The letter was just placed
+                        created = True
+
+                    if not new_board[index] and not created:
+                        longest_indices = []
+
+                    if new_board[index]:
+                        longest_indices.append(index)
+
+                    elif created:
+                        if len(longest_indices) > 1:
+                            word_indices.append(longest_indices)
+                        break
+
+
+            # Get the vertical word created
+            curr_col = [(x, col) for x in range(size)]
+            longest_indices = []
+            created = False
+
+            for index in curr_col:
+                if index in indices:  # The letter was just placed
+                    created = True
+
+                if not new_board[index] and not created:
+                    longest_indices = []
+
+                if new_board[index]:
+                    longest_indices.append(index)
+
+                elif created:
+                    word_indices.append(longest_indices)
+                    break
+
+
+        word_indices = [indices for indices in word_indices if self.unplayed_indices(indices)]
+        return [(''.join([new_board[ind] for ind in indices]), indices) for indices in word_indices]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    def generate_successor(self, agent_id, word, indices):
+        pass
+
     def valid_word(self, word):
         return word in self.dawg
 
@@ -162,7 +399,7 @@ class Scrabble():
         multipliers = [multipliers[ind] for ind in created_indices if multipliers[ind]]
 
     # Word, Indices --> Score
-    def score(self, word, indices):
+    def word_score(self, word, indices):
         '''Returns the score of a word at a given index'''
 
         base_word_score = [self.score_map[letter] for letter in word]
