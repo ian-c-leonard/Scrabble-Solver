@@ -7,6 +7,7 @@ from lexpy.dawg import DAWG
 from src.Agent import Agent
 from collections import defaultdict
 from src.word_sets import WORD_SETS
+from src.dictionary import DICTIONARY
 
 class ScrabbleRules():
     def __init__(self, size=15, multipliers=None, blanks=False, dirty = False): # TODO bad words
@@ -25,6 +26,7 @@ class ScrabbleRules():
                           'Q': 10, 'R': 1, 'S': 1, 'T': 1, 'U': 1, 'V': 4, 'W': 4, 'X': 8,
                           'Y': 4, 'Z': 10, 'BLANK': 0}
         self.dawg = self._optimize_scrabble_words()  # Optimize Scrabble words with a lookup dictionary
+        self.dictionary = DICTIONARY
         self.word_sets = WORD_SETS or self._build_word_sets()
 
     def _optimize_scrabble_words(self):
@@ -43,7 +45,8 @@ class ScrabbleRules():
         word_sets = defaultdict(lambda: defaultdict(set()))
         letters = set(self.tiles)
 
-        sets = {length: {(i, l): {w for w in self.words if len(w) == length and len(w) > i  and w[i] == l}
+        sets = {length: {(i, l): sorted({w for w in self.words if len(w) == length and len(w) > i  and w[i] == l}, 
+                                            lambda x: -self.dictionary[x])
                              for i in range(length) for l in letters}
                     for length in range(2, self.size + 1)}
 
