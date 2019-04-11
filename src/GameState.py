@@ -1,15 +1,16 @@
 import numpy as np
 from random import shuffle
+from copy import deepcopy
 from collections import Counter
 from src.Scrabble import ScrabbleRules
 
 class GameState:
 
-    def __init__(self, blanks = False, size = 15, scrabble_rules = None):
-        if scrabble_rules == None:
-            self.scrabble_rules = ScrabbleRules(size, blanks)
-        else:
-            self.scrabble_rules = scrabble_rules
+    def __init__(self, blanks = False, size = 15):
+        # if scrabble_rules == None:
+        #     self.scrabble_rules = ScrabbleRules(size, blanks)
+        # else:
+        #     self.scrabble_rules = scrabble_rules
         self.agents = {}
         self.size = size
         self.num_agents = 0
@@ -53,20 +54,10 @@ class GameState:
 
         agent.tiles = Counter(old_tiles + drawn_tiles)
 
-    def get_legal_moves(self, agent_id):
+    def get_legal_moves(self, agent_id, scrabble_rules):
+        return scrabble_rules.change_me_daddy(agent_id, self)
 
-        return self.scrabble_rules.change_me_daddy(agent_id, self)
-
-
-        # board = self.board.copy()
-        # grids = self.scrabble_rules.get_grids(board)
-        # list_of_moves = [self.scrabble_rules.get_grid_words(*grid) for grid in grids]
-        # moves = [move for moves in list_of_moves for move in moves if self.scrabble_rules.validate_move(*move, agent = self.agents[agent_id], board = self.board)]
-        # # new_boards = [(move, self.place(*move, mock = True, agent_id = agent_id)) for move in moves]
-
-        # return moves
-
-    def place(self, word, indices, agent_id, mock = False):
+    def place(self, word, indices, agent_id, scrabble_rules, mock= False):
         '''Place a word in a location on the board.
            You can mock placements and return the would-be board state'''
 
@@ -79,4 +70,7 @@ class GameState:
             return board
 
         agent = self.agents[agent_id]
-        agent.score += self.scrabble_rules.word_score(word, indices)
+        agent.score += scrabble_rules.word_score(word, indices)
+
+    def generate_successor(self, agent_id, word, indices):
+        return deepcopy(self)

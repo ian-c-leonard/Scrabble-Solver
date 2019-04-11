@@ -212,7 +212,7 @@ class ScrabbleRules():
         '''Returns the indices of all newly createds from placing a word in a position'''
 
         size = self.size
-        new_board = state.place(word, indices, mock = True, agent_id = agent_id)
+        new_board = state.place(word, indices, mock = True, agent_id = agent_id, scrabble_rules = self)
         horizontal = len(set([x[0] for x in indices])) == 1 # Word is being played horizontally
         word_indices = []
 
@@ -322,9 +322,9 @@ class ScrabbleRules():
 
 
 
-    def generate_successor(self, agent_id, word, indices):
-        state = copy.deepcopy(self)
-        return state
+    # def generate_successor(self, agent_id, word, indices):
+    #     state = copy.deepcopy(self)
+    #     return state
 
     def valid_word(self, word):
         return word in self.dawg
