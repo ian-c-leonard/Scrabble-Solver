@@ -28,7 +28,15 @@ print(state.board)
 print(agent_1.tiles)
 state.draw(1)
 print(agent_1.tiles)
-print(state.get_legal_moves(1)[:10])
+# print(state.get_legal_moves(1)[:10])
+
+print('COPY')
+copy_state = state.generate_successor(0, 1, 1)
+
+# print(copy_state.board)
+
+
+
 
 # Play
 # agents = state.agents.keys()

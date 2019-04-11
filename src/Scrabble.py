@@ -1,3 +1,4 @@
+import copy
 import numpy as np
 from random import shuffle
 from collections import Counter
@@ -37,12 +38,12 @@ class Scrabble():
         print('Done')
 
 
-    def add_agent(self, _id, agent):
-        self.agents[_id] = agent
-        self.num_agents += 1
+    # def add_agent(self, _id, agent):
+    #     self.agents[_id] = agent
+    #     self.num_agents += 1
 
-    def get_num_agents(self):
-        return self.num_agents
+    # def get_num_agents(self):
+    #     return self.num_agents
 
     def _optimize_scrabble_words(self):
         '''Initializes a Trie of all possible Scrabble words for optimized lookups.'''
@@ -378,7 +379,8 @@ class Scrabble():
 
 
     def generate_successor(self, agent_id, word, indices):
-        pass
+        state = copy.deepcopy(self)
+        return state
 
     def valid_word(self, word):
         return word in self.dawg
