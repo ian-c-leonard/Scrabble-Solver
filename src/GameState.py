@@ -5,12 +5,7 @@ from collections import Counter
 from src.Scrabble import ScrabbleRules
 
 class GameState:
-
     def __init__(self, blanks = False, size = 15):
-        # if scrabble_rules == None:
-        #     self.scrabble_rules = ScrabbleRules(size, blanks)
-        # else:
-        #     self.scrabble_rules = scrabble_rules
         self.agents = {}
         self.size = size
         self.num_agents = 0

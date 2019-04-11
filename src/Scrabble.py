@@ -116,32 +116,13 @@ class ScrabbleRules():
         multipliers = [y + y[::-1][1:] for y in quadrant]
         return np.array(multipliers, dtype=object).reshape(self.size, self.size)
 
-    # def get_agent_rack(self, agent):
-    #     return agent.tiles
-
-    # def is_over(self):
-    #     out_of_words = not self.tiles and any([not agent.tiles for agent in self.agents])
-
-    #     out_of_possible_moves = any([agent.out_of_moves for agent in self.agents])
-
-    #     if out_of_words or out_of_plays:
-    #         return True
-
-    #     return False
-
-
     def get_grids(self, board):
         rows = [board[i] for i in range(self.size)]
         row_indices = [[(i, x) for x in range(self.size)] for i in range(self.size)]
         cols = [[board[x][i] for x in range(self.size)] for i in range(self.size)]
         col_indices = [[(x, i) for x in range(self.size)] for i in range(self.size)]
 
-
         return  list(zip(rows, row_indices)) + list(zip(cols, col_indices))
-
-
-
-
 
     def validate_move(self, word, indices, agent_id, state): # this will need to take in game state
 
@@ -162,8 +143,6 @@ class ScrabbleRules():
                     return False
 
         return True
-
-
 
     def get_grid_words(self, row, indices):
         ## Getting the start and end indices
@@ -203,10 +182,6 @@ class ScrabbleRules():
         words_to_indices = [(word, indices) for words, indices in words_and_indices for word in words]
 
         return words_to_indices
-
-
-
-
 
     def get_created_word_indices(self, word, indices, agent_id, state):
         '''Returns the indices of all newly createds from placing a word in a position'''
@@ -284,7 +259,6 @@ class ScrabbleRules():
                             word_indices.append(longest_indices)
                         break
 
-
             # Get the vertical word created
             curr_col = [(x, col) for x in range(size)]
             longest_indices = []
@@ -304,10 +278,8 @@ class ScrabbleRules():
                     word_indices.append(longest_indices)
                     break
 
-
         word_indices = [indices for indices in word_indices if self.unplayed_indices(indices)]
         return [(''.join([new_board[ind] for ind in indices]), indices) for indices in word_indices]
-
 
     def change_me_daddy(self, agent_id, state):
         board = state.board.copy()
@@ -319,7 +291,6 @@ class ScrabbleRules():
 
     def valid_word(self, word):
         return word in self.dawg
-
 
     def placement_score(self, word, indices):
         '''Returns the score of a word being placed and a specified index'''
