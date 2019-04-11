@@ -8,7 +8,7 @@ from src.Agent import Agent
 from collections import defaultdict
 from src.word_sets import WORD_SETS
 
-class Scrabble():
+class ScrabbleRules():
     def __init__(self, size=15, multipliers=None, blanks=False):
         print('Initializing Scrabble...')
         assert size % 2, 'Board length must be odd.'
@@ -17,17 +17,9 @@ class Scrabble():
         self.words = WORDS  # List of Scrabble words
         self.size = size  # Size of the board
         self.center = (size // 2, size // 2)
-        self.board = np.array([''] * size ** 2, dtype=object).reshape(size, size)
-        self.agents = {}
-        self.num_agents = 0
+        # self.board = np.array([''] * size ** 2, dtype=object).reshape(size, size)
         self.multipliers = multipliers if multipliers else self._default_multipliers()
         self.counted_tiles = np.zeros((size, size), dtype=int)
-        self.tiles = ['A'] * 9 + ['B'] * 2 + ['C'] * 2 + ['D'] * 4 + ['E'] * 12 + ['F'] * 2 + \
-                     ['G'] * 3 + ['H'] * 2 + ['I'] * 9 + ['J'] * 1 + ['K'] * 1 + ['L'] * 4 + \
-                     ['M'] * 2 + ['N'] * 6 + ['O'] * 8 + ['P'] * 2 + ['Q'] * 1 + ['R'] * 6 + \
-                     ['S'] * 4 + ['T'] * 6 + ['U'] * 4 + ['V'] * 2 + ['W'] * 2 + ['X'] * 1 + \
-                     ['Y'] * 2 + ['Z'] * 1 + (['BLANK'] * 2 if blanks else [])
-        shuffle(self.tiles)
         self.score_map = {'A': 1, 'B': 3, 'C': 3, 'D': 2, 'E': 1, 'F': 4, 'G': 2, 'H': 4,
                           'I': 1, 'J': 8, 'K': 5, 'L': 1, 'M': 3, 'N': 1, 'O': 1, 'P': 3,
                           'Q': 10, 'R': 1, 'S': 1, 'T': 1, 'U': 1, 'V': 4, 'W': 4, 'X': 8,
@@ -35,21 +27,13 @@ class Scrabble():
 
         self.dawg = self._optimize_scrabble_words()  # Optimize Scrabble words with a lookup dictionary
         self.word_sets = WORD_SETS or self._build_word_sets()
-        print('Done')
-
-
-    # def add_agent(self, _id, agent):
-    #     self.agents[_id] = agent
-    #     self.num_agents += 1
-
-    # def get_num_agents(self):
-    #     return self.num_agents
 
     def _optimize_scrabble_words(self):
         '''Initializes a Trie of all possible Scrabble words for optimized lookups.'''
         print('Optimizing Word Dictionary...')
         dawg = DAWG()
         dawg.add_all(WORDS)
+        print('Done Optimizing.')
 
         return dawg
 
@@ -57,7 +41,7 @@ class Scrabble():
         return not all([self.counted_tiles[index] for index in indices])
 
     def _build_word_sets(self):
-        print('Organizeing Word Sets...')
+        print('Organizing Word Sets...')
         word_sets = defaultdict(lambda: defaultdict(set()))
         letters = set(self.tiles)
 
@@ -66,6 +50,7 @@ class Scrabble():
                     for length in range(2, self.size + 1)}
 
         word_sets.update(sets)
+        print('Done Organizing.')
 
         return word_sets
 
@@ -145,48 +130,7 @@ class Scrabble():
     #     return False
 
 
-    # def draw(self, agent_id): # TODO need to draw the tiles in the order they are
-    #     '''Draw from the global game's tile bag'''
-    #     agent = self.agents[agent_id]
-    #     n_missing = 7 - sum(agent.tiles.values())
-    #     old_tiles = [x for l in [[tile]*num for tile, num in agent.tiles.items()] for x in l] # unpacking
-    #     drawn_tiles = list(np.random.choice(self.tiles, n_missing, replace = False))
-
-    #     for x in drawn_tiles:
-    #         self.tiles.remove(x)
-
-    #     agent.tiles = Counter(old_tiles + drawn_tiles)
-
-    def place(self, word, indices, agent_id, mock = False):
-        '''Place a word in a location on the board.
-           You can mock placements and return the would-be board state'''
-
-        board = self.board.copy() if mock else self.board
-
-        for count, ind in enumerate(indices):
-            board[ind] = word[count]
-
-        if mock: # We want to actually return the board if it's a mock placemenent
-            return board
-
-        agent = self.agents[agent_id]
-        agent.score += self.word_score(word, indices)
-
-
-    def get_legal_moves(self, agent_id):  # TODO move to the scrabble class
-        grids = self.get_grids()
-        list_of_moves = [self.get_grid_words(*grid) for grid in grids]
-        moves = [move for moves in list_of_moves for move in moves if self.validate_move(*move, agent_id = agent_id)]
-        # new_boards = [(move, self.place(*move, mock = True, agent_id = agent_id)) for move in moves]
-
-        return moves
-
-
-
-
-    def get_grids(self):
-        board = self.board.copy()
-
+    def get_grids(self, board):
         rows = [board[i] for i in range(self.size)]
         row_indices = [[(i, x) for x in range(self.size)] for i in range(self.size)]
         cols = [[board[x][i] for x in range(self.size)] for i in range(self.size)]
@@ -199,23 +143,25 @@ class Scrabble():
 
 
 
-    def validate_move(self, word, indices, agent_id): # this will need to take in game state
+    def validate_move(self, word, indices, agent_id, state): # this will need to take in game state
 
-        agent = self.agents[agent_id]
+        agent = state.agents[agent_id]
         #Check if agent has required tiles to form a word
-        required_tiles = Counter([word[i] for i, index in enumerate(indices) if word[i] != self.board[index]])
+        required_tiles = Counter([word[i] for i, index in enumerate(indices) if word[i] != state.board[index]])
 
         for tile in required_tiles:
             if agent.tiles[tile] < required_tiles[tile]:
                 return False
 
         # Check if all created words are valid
-        created_words = self.get_created_word_indices(word, indices, agent_id = agent_id)
-        return created_words
+        created_words = self.get_created_word_indices(word, indices, agent_id = agent_id, state = state)
+        # return created_words
 
         for (word, indices) in created_words:
                 if not self.valid_word(word):
                     return False
+
+        return True
 
 
 
@@ -262,11 +208,11 @@ class Scrabble():
 
 
 
-    def get_created_word_indices(self, word, indices, agent_id):
+    def get_created_word_indices(self, word, indices, agent_id, state):
         '''Returns the indices of all newly createds from placing a word in a position'''
 
         size = self.size
-        new_board = self.place(word, indices, mock = True, agent_id = agent_id)
+        new_board = state.place(word, indices, mock = True, agent_id = agent_id)
         horizontal = len(set([x[0] for x in indices])) == 1 # Word is being played horizontally
         word_indices = []
 
@@ -363,15 +309,13 @@ class Scrabble():
         return [(''.join([new_board[ind] for ind in indices]), indices) for indices in word_indices]
 
 
+    def change_me_daddy(self, agent_id, state):
+        board = state.board.copy()
+        grids = self.get_grids(board)
+        list_of_moves = [self.get_grid_words(*grid) for grid in grids]
+        moves = [move for moves in list_of_moves for move in moves if self.validate_move(*move, agent_id, state = state)]
 
-
-
-
-
-
-
-
-
+        return moves
 
 
 

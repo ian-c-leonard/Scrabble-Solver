@@ -1,6 +1,7 @@
 import argparse
 from src.View import View
-from src.Scrabble import Scrabble
+from src.Scrabble import ScrabbleRules
+from src.GameState import GameState
 from src.Agent import Agent
 from src.Minimax import Minimax
 
@@ -15,7 +16,10 @@ if not results.size:
     results.size = 15
 
 # Setting up the game with two players
-state = Scrabble(blanks=results.blanks, size=results.size)
+
+rules = ScrabbleRules(blanks = results.blanks, size = results.size)
+state = GameState(blanks = results.blanks, size = results.size, scrabble_rules = rules)
+
 agent_0 = Agent()
 agent_1 = Agent()
 state.add_agent(0, agent_0)
@@ -28,10 +32,10 @@ print(state.board)
 print(agent_1.tiles)
 state.draw(1)
 print(agent_1.tiles)
-# print(state.get_legal_moves(1)[:10])
+print(state.get_legal_moves(1)[:10])
 
-print('COPY')
-copy_state = state.generate_successor(0, 1, 1)
+# print('COPY')
+# copy_state = state.generate_successor(0, 1, 1)
 
 # print(copy_state.board)
 
