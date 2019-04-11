@@ -24,8 +24,8 @@ class GameState:
     def get_num_agents(self):
         return self.num_agents
 
-    def get_agent_rack(self, agent):
-        return agent.tiles
+    # def get_agent_rack(self, agent):
+    #     return agent.tiles
 
     def is_over(self):
         out_of_words = not self.bag and any([not agent.tiles for agent in self.agents])
@@ -41,10 +41,8 @@ class GameState:
         agent = self.agents[agent_id]
         n_missing = 7 - sum(agent.tiles.values())
         old_tiles = [x for l in [[tile]*num for tile, num in agent.tiles.items()] for x in l] # unpacking
-        drawn_tiles = list(np.random.choice(self.bag, n_missing, replace = False))
-
-        for x in drawn_tiles:
-            self.bag.remove(x)
+        drawn_tiles = self.bag[:n_missing]
+        self.bag = self.bag[n_missing:]
 
         agent.tiles = Counter(old_tiles + drawn_tiles)
 

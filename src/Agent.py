@@ -1,4 +1,3 @@
-import numpy as np
 from collections import Counter
 class Agent():
     def __init__(self):
