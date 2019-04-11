@@ -9,7 +9,7 @@ from collections import defaultdict
 from src.word_sets import WORD_SETS
 
 class ScrabbleRules():
-    def __init__(self, size=15, multipliers=None, blanks=False):
+    def __init__(self, size=15, multipliers=None, blanks=False, dirty = False): # TODO bad words
         print('Initializing Scrabble...')
         assert size % 2, 'Board length must be odd.'
         self.agent = 0  # The agent's turn
@@ -316,15 +316,6 @@ class ScrabbleRules():
         moves = [move for moves in list_of_moves for move in moves if self.validate_move(*move, agent_id, state = state)]
 
         return moves
-
-
-
-
-
-
-    # def generate_successor(self, agent_id, word, indices):
-    #     state = copy.deepcopy(self)
-    #     return state
 
     def valid_word(self, word):
         return word in self.dawg

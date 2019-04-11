@@ -72,5 +72,7 @@ class GameState:
         agent = self.agents[agent_id]
         agent.score += scrabble_rules.word_score(word, indices)
 
-    def generate_successor(self, agent_id, word, indices):
-        return deepcopy(self)
+    def generate_successor(self, agent_id, word, indices, scrabble_rules):
+        new_state = deepcopy(self)
+        new_state.place(word, indices, agent_id, scrabble_rules)
+        return new_state

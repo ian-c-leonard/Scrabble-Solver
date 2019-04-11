@@ -24,17 +24,20 @@ agent_0 = Agent()
 agent_1 = Agent()
 state.add_agent(0, agent_0)
 state.add_agent(1, agent_1)
-print(agent_0.tiles)
+
 state.draw(0)
-print(agent_0.tiles)
 state.place('NARKS', [(7, 5), (7, 6), (7, 7), (7, 8), (7, 9)], 0, rules)
-print(state.board)
-print(agent_1.tiles)
 state.draw(1)
-print(agent_1.tiles)
-print(state.get_legal_moves(1, rules)[:10])
-print('COPY')
-state.generate_successor(0, 0, 0)
+
+move = state.get_legal_moves(1, rules)[10]
+new_state = state.generate_successor(1, move[0], move[1], rules)
+
+print(state.board)
+print(state.agents[1].score)
+print(new_state.board)
+print(new_state.agents[1].score)
+print(state.board)
+print(state.agents[1].score)
 
 
 # new_state = state.generate_successor(0, 0, 0)
