@@ -131,31 +131,31 @@ class Scrabble():
         multipliers = [y + y[::-1][1:] for y in quadrant]
         return np.array(multipliers, dtype=object).reshape(self.size, self.size)
 
-    def get_agent_rack(self, agent):
-        return agent.tiles
+    # def get_agent_rack(self, agent):
+    #     return agent.tiles
 
-    def is_over(self):
-        out_of_words = not self.tiles and any([not agent.tiles for agent in self.agents])
+    # def is_over(self):
+    #     out_of_words = not self.tiles and any([not agent.tiles for agent in self.agents])
 
-        out_of_possible_moves = any([agent.out_of_moves for agent in self.agents])
+    #     out_of_possible_moves = any([agent.out_of_moves for agent in self.agents])
 
-        if out_of_words or out_of_plays:
-            return True
+    #     if out_of_words or out_of_plays:
+    #         return True
 
-        return False
+    #     return False
 
 
-    def draw(self, agent_id): # TODO need to draw the tiles in the order they are
-        '''Draw from the global game's tile bag'''
-        agent = self.agents[agent_id]
-        n_missing = 7 - sum(agent.tiles.values())
-        old_tiles = [x for l in [[tile]*num for tile, num in agent.tiles.items()] for x in l] # unpacking
-        drawn_tiles = list(np.random.choice(self.tiles, n_missing, replace = False))
+    # def draw(self, agent_id): # TODO need to draw the tiles in the order they are
+    #     '''Draw from the global game's tile bag'''
+    #     agent = self.agents[agent_id]
+    #     n_missing = 7 - sum(agent.tiles.values())
+    #     old_tiles = [x for l in [[tile]*num for tile, num in agent.tiles.items()] for x in l] # unpacking
+    #     drawn_tiles = list(np.random.choice(self.tiles, n_missing, replace = False))
 
-        for x in drawn_tiles:
-            self.tiles.remove(x)
+    #     for x in drawn_tiles:
+    #         self.tiles.remove(x)
 
-        agent.tiles = Counter(old_tiles + drawn_tiles)
+    #     agent.tiles = Counter(old_tiles + drawn_tiles)
 
     def place(self, word, indices, agent_id, mock = False):
         '''Place a word in a location on the board.
@@ -199,7 +199,7 @@ class Scrabble():
 
 
 
-    def validate_move(self, word, indices, agent_id):
+    def validate_move(self, word, indices, agent_id): # this will need to take in game state
 
         agent = self.agents[agent_id]
         #Check if agent has required tiles to form a word
