@@ -2,8 +2,9 @@ PAS = 'pass'
 INF = float('inf')
 
 class Minimax():
-    def __init__(self, max_who):
+    def __init__(self, max_who, rules):
         self.max_who = max_who
+        self.rules = rules
 
     def value(self, state, agent_id, depth):
         if state.is_over() or depth == 0:
@@ -16,8 +17,8 @@ class Minimax():
 
     def max_or_min_value(self, state, agent_id, depth, fn, initial_value):
         v = (initial_value, PAS)
-        for action in state.get_legal_actions(agent_id):
-            v = fn([v, (self.value(state.generate_successor(agent_id, action), (agent_id + 1) % state.get_num_agents(), depth - 1), action)], key=lambda pair: pair[0])
+        for action in state.get_legal_moves(agent_id, self.rules):
+            v = fn([v, (self.value(state.generate_successor(agent_id, action[0], action[1], self.rules), (agent_id + 1) % state.get_num_agents(), depth - 1), action)], key=lambda pair: pair[0])
         return v
 
     def evaluation_function(self, state, agent_id): # TODO do it live (one liner)

@@ -28,8 +28,9 @@ class GameState:
     #     return agent.tiles
 
     def is_over(self):
-        out_of_words = not self.bag and any([not agent.tiles for agent in self.agents])
-        out_of_possible_moves = any([agent.out_of_moves for agent in self.agents])
+        agents = self.agents.values()
+        out_of_words = not self.bag and any([not agent.tiles for agent in agents])
+        out_of_possible_moves = any([agent.out_of_moves for agent in agents])
 
         if out_of_words or out_of_possible_moves:
             return True
@@ -56,6 +57,9 @@ class GameState:
         board = self.board.copy() if mock else self.board
 
         for count, ind in enumerate(indices):
+            # print('asdasdasd')
+            # print(word)
+            # print(self.board)
             board[ind] = word[count]
 
         if mock: # We want to actually return the board if it's a mock placemenent

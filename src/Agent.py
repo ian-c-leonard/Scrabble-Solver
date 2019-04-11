@@ -4,3 +4,4 @@ class Agent():
         self.tiles = Counter()
         self.opponent_tiles = []
         self.score = 0
+        self.out_of_moves = False
