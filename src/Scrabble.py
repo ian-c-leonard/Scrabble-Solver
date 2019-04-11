@@ -24,7 +24,6 @@ class ScrabbleRules():
                           'I': 1, 'J': 8, 'K': 5, 'L': 1, 'M': 3, 'N': 1, 'O': 1, 'P': 3,
                           'Q': 10, 'R': 1, 'S': 1, 'T': 1, 'U': 1, 'V': 4, 'W': 4, 'X': 8,
                           'Y': 4, 'Z': 10, 'BLANK': 0}
-
         self.dawg = self._optimize_scrabble_words()  # Optimize Scrabble words with a lookup dictionary
         self.word_sets = WORD_SETS or self._build_word_sets()
 
@@ -34,7 +33,6 @@ class ScrabbleRules():
         dawg = DAWG()
         dawg.add_all(WORDS)
         print('Done Optimizing.')
-
         return dawg
 
     def unplayed_indices(self, indices):
@@ -51,14 +49,12 @@ class ScrabbleRules():
 
         word_sets.update(sets)
         print('Done Organizing.')
-
         return word_sets
 
     def satisfying_words(self, length, constrains):
         '''Given a length and a list of constraints (e.g. (5, [(1, 'A'), ... , (12, 'Z')])),
            return the set of words of a given length which satisfy all of the constraints'''
         sets = [self.word_sets[length][c] for c in constrains]
-
         return set.intersection(*sets)
 
     def get_row_words(self, row, indices):
@@ -215,7 +211,6 @@ class ScrabbleRules():
                             word_indices.append(longest_indices)
                         break
 
-
             # Get all horizontal words created
             curr_row = [(row, x) for x in range(size)]
             longest_indices = []
@@ -309,12 +304,10 @@ class ScrabbleRules():
     # Word, Indices --> Score
     def word_score(self, word, indices):
         '''Returns the score of a word at a given index'''
-
         base_word_score = [self.score_map[letter] for letter in word]
         board_scores = [self.multipliers[ind] for ind in indices if not self.counted_tiles[ind]]
 
         word_multiplier = 1
-
         for ind, score in enumerate(board_scores):
             if score == '3W':
                 word_multiplier *= 3

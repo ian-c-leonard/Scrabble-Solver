@@ -29,7 +29,6 @@ class GameState:
 
     def is_over(self):
         out_of_words = not self.bag and any([not agent.tiles for agent in self.agents])
-
         out_of_possible_moves = any([agent.out_of_moves for agent in self.agents])
 
         if out_of_words or out_of_possible_moves:
