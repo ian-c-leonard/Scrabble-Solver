@@ -45,7 +45,7 @@ class ScrabbleRules():
         word_sets = defaultdict(lambda: defaultdict(set()))
         letters = set(self.tiles)
 
-        sets = {length: {(i, l): sorted({w for w in self.words if len(w) == length and len(w) > i  and w[i] == l}, 
+        sets = {length: {(i, l): sorted({w for w in self.words if len(w) == length and len(w) > i  and w[i] == l},
                                             lambda x: -self.dictionary[x])
                              for i in range(length) for l in letters}
                     for length in range(2, self.size + 1)}
