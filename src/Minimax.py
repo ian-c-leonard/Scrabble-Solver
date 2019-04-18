@@ -1,31 +1,48 @@
-class Minimax:
-    def value(self, state, agent_id):
-        util = utility(state) # we need to limit and get values for the state (agents score - others)
-        if util != None:
-            return util
+PAS = 'pass'
+INF = float('inf')
 
-        if agent_id == 1:
-            return self.max_value(state, agent_id)
-        if agent_id == -1:
-            return self.min_value(state, agent_id)
+class Minimax():
+    def __init__(self, max_who, rules):
+        self.max_who = max_who
+        self.rules = rules
 
-    def max_value(self, state, agent_id):
-        v = float('-inf')
-        for move in [i for i, cell in enumerate(state) if cell == None]:
-            new_state = state[:]
-            new_state[move] = 1
-            v = max(v, self.value(new_state, -agent_id))
-        return v
+    def value(self, state, agent_id, depth, alpha, beta):
+        if state.is_over() or depth == 0:
+            return self.evaluation_function(state, agent_id)
 
-    
-    def min_value(self, state, agent_id):
-        v = float('inf')
-        for move in [i for i, cell in enumerate(state) if cell == None]:
-            new_state = state[:]
-            new_state[move] = -1
-            v = min(v, self.value(new_state, -agent_id))
-        return v
-    
-    
-    def succ(word, index):
-        return new_board
+        if agent_id == self.max_who:
+            return self.max_value(state, agent_id, depth, alpha, beta)[0]
+
+        return self.min_value(state, agent_id, depth, alpha, beta)[0]
+
+    def max_value(self, state, agent_id, depth, alpha, beta):
+        max_eval = (-INF, PAS)
+        for action in state.get_legal_moves(agent_id, self.rules):
+            _eval = (self.value(state.generate_successor(agent_id, action[0], action[1], self.rules), (agent_id + 1) % state.get_num_agents(), depth - 1, alpha, beta), action)
+            max_eval = max([max_eval, _eval], key=lambda pair: pair[0])
+            alpha = max([alpha, _eval], key=lambda pair: pair[0])
+            if beta[0] <= alpha[0]:
+                break
+        return max_eval
+
+    def min_value(self, state, agent_id, depth, alpha, beta):
+        min_eval = (INF, PAS)
+        for action in state.get_legal_moves(agent_id, self.rules):
+            _eval = (self.value(state.generate_successor(agent_id, action[0], action[1], self.rules), (agent_id + 1) % state.get_num_agents(), depth - 1, alpha, beta), action)
+            min_eval = min([min_eval, _eval], key=lambda pair: pair[0])
+            beta = min([beta, _eval], key=lambda pair: pair[0])
+            if beta[0] <= alpha[0]:
+                break
+        return min_eval
+
+    def evaluation_function(self, state, agent_id):
+        evauation = 0
+        for _id in state.agents.keys():
+            if _id == agent_id:
+                evauation += state.agents[_id].score
+            else:
+                evauation -= state.agents[_id].score
+        return evauation
+
+    def get_best_word(self, state, agent_id, depth):
+        return self.max_value(state, agent_id, depth * state.get_num_agents(), (-INF, PAS), (INF, PAS))[1]
