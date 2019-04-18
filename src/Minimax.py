@@ -6,19 +6,31 @@ class Minimax():
         self.max_who = max_who
         self.rules = rules
 
-    def value(self, state, agent_id, depth):
+    def value(self, state, agent_id, depth, alpha, beta):
         if state.is_over() or depth == 0:
             return self.evaluation_function(state, agent_id)
 
         if agent_id == self.max_who:
-            return self.max_value(state, agent_id, depth)[0]
+            return self.max_value(state, agent_id, depth, alpha, beta)[0]
 
-        return self.min_value(state, agent_id, depth)[0]
+        return self.min_value(state, agent_id, depth, alpha, beta)[0]
 
-    def max_or_min_value(self, state, agent_id, depth, fn, initial_value):
-        v = (initial_value, PAS)
+    def max_value(self, state, agent_id, depth, alpha, beta):
+        v = (-INF, PAS)
         for action in state.get_legal_moves(agent_id, self.rules):
-            v = fn([v, (self.value(state.generate_successor(agent_id, action[0], action[1], self.rules), (agent_id + 1) % state.get_num_agents(), depth - 1), action)], key=lambda pair: pair[0])
+            v = max([v, (self.value(state.generate_successor(agent_id, action[0], action[1], self.rules), (agent_id + 1) % state.get_num_agents(), depth - 1, alpha, beta), action)], key=lambda pair: pair[0])
+            alpha = max([alpha, v], key=lambda pair: pair[0])
+            if beta[0] <= alpha[0]:
+                break
+        return v
+
+    def min_value(self, state, agent_id, depth, alpha, beta):
+        v = (INF, PAS)
+        for action in state.get_legal_moves(agent_id, self.rules):
+            v = min([v, (self.value(state.generate_successor(agent_id, action[0], action[1], self.rules), (agent_id + 1) % state.get_num_agents(), depth - 1, alpha, beta), action)], key=lambda pair: pair[0])
+            beta = min([beta, v], key=lambda pair: pair[0])
+            if beta[0] <= alpha[0]:
+                break
         return v
 
     def evaluation_function(self, state, agent_id): # TODO do it live (one liner)
@@ -30,11 +42,5 @@ class Minimax():
                 evauation -= state.agents[_id].score
         return evauation
 
-    def max_value(self, state, agent_id, depth):
-        return self.max_or_min_value(state, agent_id, depth, max, -INF)
-
-    def min_value(self, state, agent_id, depth):
-        return self.max_or_min_value(state, agent_id, depth, min, INF)
-
-    def get_best_word(self, state, agent_id, depth):
-        return self.max_value(state, agent_id, depth * state.get_num_agents())[1] # TODO get depth value right
+    def get_best_word(self, state, agent_id, depth, alpha, beta):
+        return self.max_value(state, agent_id, depth * state.get_num_agents(), alpha, beta)[1] # TODO get depth value right

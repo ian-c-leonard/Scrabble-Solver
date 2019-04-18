@@ -6,6 +6,9 @@ from src.Agent import Agent
 from src.Minimax import Minimax
 import time
 
+PAS = 'pass'
+INF = float('inf')
+
 # Parsing command line arguments
 parser = argparse.ArgumentParser()
 
@@ -78,7 +81,7 @@ try:
     while True:
         for agent in agents:
             state.draw(agent)
-            best_move = Minimax(agent, rules).get_best_word(state, agent, 1)
+            best_move = Minimax(agent, rules).get_best_word(state, agent, 1, (-INF, PAS), (INF, PAS))
             print(f'Agent #{agent} played: {best_move[0]}')
             state.place(best_move[0], best_move[1], agent, rules)
             if state.is_over():
