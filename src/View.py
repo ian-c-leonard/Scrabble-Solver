@@ -353,12 +353,14 @@ class View():
              "| '--------------' |"
              " ------------------ "]
 
-        #print ("Fake Rack:", fake_rack)
+
 
         display_board = "Current Board\n"
         for row in board:
             for sub in range(0, len(a)):
                 for tile in row:
+                    if tile == "":
+                        display_board += blank[sub]
                     if tile == "A":
                         display_board += a[sub]
                     if tile == "B":
@@ -413,13 +415,11 @@ class View():
                         display_board += z[sub]
                     if tile == "star":
                         display_board += star[sub]
-                    if tile == "":
-                        # TODO: add bonuses, or at least star in center
-                        display_board += blank[sub]
+
 
                 display_board += "\n"
 
-        print (display_board)
+        return display_board
 
         # display_rack = "Your Tiles\n"
         # for sub in range(0, len(a)):
