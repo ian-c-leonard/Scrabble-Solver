@@ -18,12 +18,60 @@ if not results.size:
 
 rules = ScrabbleRules(blanks = results.blanks, size = results.size)
 state = GameState(blanks = results.blanks, size = results.size)
+view = View()
 
 agent_0 = Agent()
 agent_1 = Agent()
 state.add_agent(0, agent_0)
 state.add_agent(1, agent_1)
-state.place('A', [(2, 2)], 0, rules)
+state.place('A', [(4, 4)], 0, rules)
+
+# state.draw(0)
+# state.draw(1)
+
+
+# print(state.board)
+
+# minimax_0 = Minimax(0, rules)
+
+# best_move = minimax_0.get_best_word(state, 0, 1)
+
+# print(best_move)
+
+# Setting up the game with two players
+
+# rules = ScrabbleRules(blanks = results.blanks, size = results.size)
+# state = GameState(blanks = results.blanks, size = results.size)
+
+# agent_0 = Agent()
+# agent_1 = Agent()
+# state.add_agent(0, agent_0)
+# state.add_agent(1, agent_1)
+
+# state.draw(0)
+# state.place('ARK', [(3, 2), (3, 3), (3, 4)], 0, rules)
+# state.draw(1)
+
+# move = state.get_legal_moves(1, rules)[10]
+# new_state = state.generate_successor(1, move[0], move[1], rules)
+
+# print(state.board)
+# print(state.agents[1].score)
+# print(new_state.board)
+# print(new_state.agents[1].score)
+# print(state.board)
+# print(state.agents[1].score)
+
+
+# new_state = state.generate_successor(0, 0, 0)
+
+# print('COPY')
+# copy_state = state.generate_successor(0, 1, 1)
+
+# print(copy_state.board)
+
+
+
 
 # Play
 agents = [0, 1]
@@ -37,7 +85,9 @@ try:
             if state.is_over():
                 print('DOINE BOI')
                 break
-            print(state.board)
+            #print(state.board)
+            view.visualize_board(state.board)
+
             # time.sleep(2)
 except:
     print('Game Over.')
