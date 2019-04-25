@@ -28,24 +28,21 @@ state.place('A', [(3, 3)], 0, rules)
 
 # Play
 agents = [0, 1]
+
 try:
     while True:
         for agent in agents:
             state.draw(agent)
             best_move = Minimax(agent, rules).get_best_word(state, agent, 1)
             print(f'Agent #{agent} played: {best_move[0]}')
-            state.place(best_move[0], best_move[1], agent, rules)
+            print(best_move)
+            state.place(*best_move, agent, rules)
             if state.is_over():
                 print('DOINE BOI')
                 break
-            #print(state.board)
             print(view.visualize_board(state.board))
-            #print("test")
-
-            # time.sleep(2)
 except:
-    print('Game Over.')
-    print(f'Agent #0 with score: {state.agents[0].score}')
-    print(f'Agent #1 with score: {state.agents[1].score}')
-    print(f'Agent #{max(state.agents, key = lambda x: state.agents[x].score)} wins!')
-
+     print('Game Over.')
+     print(f'Agent #0 with score: {state.agents[0].score}')
+     print(f'Agent #1 with score: {state.agents[1].score}')
+     print(f'Agent #{max(state.agents, key = lambda x: state.agents[x].score)} wins!')

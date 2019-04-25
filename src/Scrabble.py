@@ -20,7 +20,6 @@ class ScrabbleRules():
         self.center = (size // 2, size // 2)
         # self.board = np.array([''] * size ** 2, dtype=object).reshape(size, size)
         self.multipliers = multipliers if multipliers else self._default_multipliers()
-        self.counted_tiles = np.zeros((size, size), dtype=int)
         self.score_map = {'A': 1, 'B': 3, 'C': 3, 'D': 2, 'E': 1, 'F': 4, 'G': 2, 'H': 4,
                           'I': 1, 'J': 8, 'K': 5, 'L': 1, 'M': 3, 'N': 1, 'O': 1, 'P': 3,
                           'Q': 10, 'R': 1, 'S': 1, 'T': 1, 'U': 1, 'V': 4, 'W': 4, 'X': 8,
@@ -37,8 +36,6 @@ class ScrabbleRules():
         print('Done Optimizing.')
         return dawg
 
-    def unplayed_indices(self, indices):
-        return not all([self.counted_tiles[index] for index in indices])
 
     def _build_word_sets(self):
         print('Organizing Word Sets...')
@@ -186,97 +183,20 @@ class ScrabbleRules():
         '''Returns the indices of all newly createds from placing a word in a position'''
 
         size = self.size
-        new_board = state.place(word, indices, mock = True, agent_id = agent_id, scrabble_rules = self)
-        horizontal = len(set([x[0] for x in indices])) == 1 # Word is being played horizontally
-        word_indices = []
+        new_board = state.place(word, indices, agent_id = agent_id, scrabble_rules = self, mock = True)
+        hor_grids = [((x, max(indices, key = lambda x: x[1])[1]), [(x, y) for y in range(size)])
+                     for x in set([i[0] for i in indices])]
+        ver_grids = [((max(indices, key = lambda x: x[0])[0], y),  [(x, y) for x in range(size)])
+                     for y in set([i[1] for i in indices])]
 
-        if horizontal:
-            row = indices[0][0]
+        # I am so sorry to whoever has to read this nested, nested, nested listcomp. Buet we needed to make this fast tho...
+        affected_indices = [grid[min(ind for ind, board_ind  in enumerate(grid)
+                                 if all([new_board[test_ind] for test_ind in grid[ind: grid.index(max_played_ind) + 1]])):
+                                 max(ind for ind, board_ind  in enumerate(grid)
+                                     if all([new_board[test_ind] for test_ind in grid[grid.index(max_played_ind): ind + 1]])) + 1]
+                            for max_played_ind, grid in hor_grids + ver_grids]
 
-            # Get all vertical words created
-            for _, j in indices:
-                col = [(x, j) for x in range(size)]
-                longest_indices = []
-                created = False
-
-                for index in col:
-                    if index in indices:  # The letter was just placed
-                        created = True
-
-                    if not new_board[index] and not created:
-                        longest_indices = []
-
-                    if new_board[index]:
-                        longest_indices.append(index)
-
-                    elif created:
-                        if len(longest_indices) > 1:
-                            word_indices.append(longest_indices)
-                        break
-
-            # Get all horizontal words created
-            curr_row = [(row, x) for x in range(size)]
-            longest_indices = []
-            created = False
-
-            for index in curr_row:
-                if index in indices:  # The letter was just placed
-                    created = True
-
-                if not new_board[index] and not created:
-                    longest_indices = []
-
-                if new_board[index]:
-                    longest_indices.append(index)
-
-                elif created:
-                    word_indices.append(longest_indices)
-                    break
-
-        else:
-            col = indices[0][1]
-
-            # Get all horizontal words created
-            for i, _ in indices:
-                row = [(i, x) for x in range(size)]
-                longest_indices = []
-                created = False
-
-                for index in row:
-                    if index in indices:  # The letter was just placed
-                        created = True
-
-                    if not new_board[index] and not created:
-                        longest_indices = []
-
-                    if new_board[index]:
-                        longest_indices.append(index)
-
-                    elif created:
-                        if len(longest_indices) > 1:
-                            word_indices.append(longest_indices)
-                        break
-
-            # Get the vertical word created
-            curr_col = [(x, col) for x in range(size)]
-            longest_indices = []
-            created = False
-
-            for index in curr_col:
-                if index in indices:  # The letter was just placed
-                    created = True
-
-                if not new_board[index] and not created:
-                    longest_indices = []
-
-                if new_board[index]:
-                    longest_indices.append(index)
-
-                elif created:
-                    word_indices.append(longest_indices)
-                    break
-
-        word_indices = [indices for indices in word_indices if self.unplayed_indices(indices)]
+        word_indices = [indices for indices in affected_indices if state.unplayed_indices(indices) if len(indices) > 1]
         return [(''.join([new_board[ind] for ind in indices]), indices) for indices in word_indices]
 
     def change_me_daddy(self, agent_id, state):
@@ -288,7 +208,7 @@ class ScrabbleRules():
         return moves
 
     def valid_word(self, word):
-        return word in self.dawg
+        return word.upper() in self.words
 
     def placement_score(self, word, indices):
         '''Returns the score of a word being placed and a specified index'''
@@ -305,10 +225,10 @@ class ScrabbleRules():
         multipliers = [multipliers[ind] for ind in created_indices if multipliers[ind]]
 
     # Word, Indices --> Score
-    def word_score(self, word, indices):
+    def word_score(self, word, indices, gamestate):
         '''Returns the score of a word at a given index'''
         base_word_score = [self.score_map[letter] for letter in word]
-        board_scores = [self.multipliers[ind] for ind in indices if not self.counted_tiles[ind]]
+        board_scores = [self.multipliers[ind] for ind in indices if not gamestate.counted_indices[ind]]
 
         word_multiplier = 1
         for ind, score in enumerate(board_scores):

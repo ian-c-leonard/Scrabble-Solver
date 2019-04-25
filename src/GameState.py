@@ -4,11 +4,13 @@ from copy import deepcopy
 from collections import Counter
 from src.Scrabble import ScrabbleRules
 
+
 class GameState:
     def __init__(self, blanks = False, size = 15):
         self.agents = {}
         self.size = size
         self.num_agents = 0
+        self.counted_indices = np.zeros((size, size), dtype=int)
         self.board = np.array([''] * size ** 2, dtype=object).reshape(size, size)
         self.bag = ['A'] * 9 + ['B'] * 2 + ['C'] * 2 + ['D'] * 4 + ['E'] * 12 + ['F'] * 2 + \
                      ['G'] * 3 + ['H'] * 2 + ['I'] * 9 + ['J'] * 1 + ['K'] * 1 + ['L'] * 4 + \
@@ -20,6 +22,11 @@ class GameState:
     def add_agent(self, agent_id, agent):
         self.agents[agent_id] = agent
         self.num_agents += 1
+
+
+    def unplayed_indices(self, indices):
+        return not all([self.counted_indices[index] for index in indices])
+
 
     def get_num_agents(self):
         return self.num_agents
@@ -50,23 +57,24 @@ class GameState:
     def get_legal_moves(self, agent_id, scrabble_rules):
         return scrabble_rules.change_me_daddy(agent_id, self)
 
-    def place(self, word, indices, agent_id, scrabble_rules, mock= False):
+    def place(self, word, indices, agent_id, scrabble_rules, mock = False):
         '''Place a word in a location on the board.
            You can mock placements and return the would-be board state'''
 
         board = self.board.copy() if mock else self.board
 
         for count, ind in enumerate(indices):
-            # print('asdasdasd')
-            # print(word)
-            # print(self.board)
             board[ind] = word[count]
 
         if mock: # We want to actually return the board if it's a mock placemenent
             return board
 
+        else:
+            for index in indices:
+                self.counted_indices[index] = 1
+
         agent = self.agents[agent_id]
-        agent.score += scrabble_rules.word_score(word, indices)
+        agent.score += scrabble_rules.word_score(word, indices, self)
 
     def generate_successor(self, agent_id, word, indices, scrabble_rules):
         new_state = deepcopy(self)
