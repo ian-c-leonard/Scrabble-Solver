@@ -44,10 +44,9 @@ while True:
         #print("test")
 
         # time.sleep(2)
-# except Exception as e:
-#     print(e)
-#     print('Game Over.')
-#     print(f'Agent #0 with score: {state.agents[0].score}')
-#     print(f'Agent #1 with score: {state.agents[1].score}')
-#     print(f'Agent #{max(state.agents, key = lambda x: state.agents[x].score)} wins!')
+except:
+     print('Game Over.')
+     print(f'Agent #0 with score: {state.agents[0].score}')
+     print(f'Agent #1 with score: {state.agents[1].score}')
+     print(f'Agent #{max(state.agents, key = lambda x: state.agents[x].score)} wins!')
 
