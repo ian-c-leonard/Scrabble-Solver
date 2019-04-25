@@ -27,7 +27,7 @@ agent_0 = Agent()
 agent_1 = Agent()
 state.add_agent(0, agent_0)
 state.add_agent(1, agent_1)
-state.place('A', [(3, 3)], 0, rules)
+state.place('A', [(results.size // 2, results.size // 2)], 0, rules)
 
 # Play
 agents = [0, 1]
