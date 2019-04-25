@@ -2,12 +2,13 @@ PAS = 'pass'
 INF = float('inf')
 
 class Minimax():
-    def __init__(self, max_who, rules):
+    def __init__(self, max_who, rules, prune=False):
         self.max_who = max_who
         self.rules = rules
+        self.prune = prune
 
     def value(self, state, agent_id, depth, alpha, beta):
-        if state.is_over() or depth == 0:
+        if state.is_over() or depth <= 0:
             return self.evaluation_function(state, agent_id)
 
         if agent_id == self.max_who:
@@ -21,7 +22,7 @@ class Minimax():
             _eval = (self.value(state.generate_successor(agent_id, action[0], action[1], self.rules), (agent_id + 1) % state.get_num_agents(), depth - 1, alpha, beta), action)
             max_eval = max([max_eval, _eval], key=lambda pair: pair[0])
             alpha = max([alpha, _eval], key=lambda pair: pair[0])
-            if beta[0] <= alpha[0]:
+            if beta[0] <= alpha[0] and self.prune:
                 break
         return max_eval
 
@@ -31,7 +32,7 @@ class Minimax():
             _eval = (self.value(state.generate_successor(agent_id, action[0], action[1], self.rules), (agent_id + 1) % state.get_num_agents(), depth - 1, alpha, beta), action)
             min_eval = min([min_eval, _eval], key=lambda pair: pair[0])
             beta = min([beta, _eval], key=lambda pair: pair[0])
-            if beta[0] <= alpha[0]:
+            if beta[0] <= alpha[0] and self.prune:
                 break
         return min_eval
 
