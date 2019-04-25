@@ -26,8 +26,8 @@ class GameState:
 
     def unplayed_indices(self, indices):
         return not all([self.counted_indices[index] for index in indices])
-    
-    
+
+
     def get_num_agents(self):
         return self.num_agents
 
@@ -68,7 +68,7 @@ class GameState:
 
         if mock: # We want to actually return the board if it's a mock placemenent
             return board
-       
+
         else:
             for index in indices:
                 self.counted_indices[index] = 1

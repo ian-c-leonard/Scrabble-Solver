@@ -35,7 +35,7 @@ class ScrabbleRules():
         dawg.add_all(WORDS)
         print('Done Optimizing.')
         return dawg
-    
+
 
     def _build_word_sets(self):
         print('Organizing Word Sets...')
@@ -190,9 +190,9 @@ class ScrabbleRules():
                      for y in set([i[1] for i in indices])]
 
         # I am so sorry to whoever has to read this nested, nested, nested listcomp. Buet we needed to make this fast tho...
-        affected_indices = [grid[min(ind for ind, board_ind  in enumerate(grid) 
+        affected_indices = [grid[min(ind for ind, board_ind  in enumerate(grid)
                                  if all([new_board[test_ind] for test_ind in grid[ind: grid.index(max_played_ind) + 1]])):
-                                 max(ind for ind, board_ind  in enumerate(grid) 
+                                 max(ind for ind, board_ind  in enumerate(grid)
                                      if all([new_board[test_ind] for test_ind in grid[grid.index(max_played_ind): ind + 1]])) + 1]
                             for max_played_ind, grid in hor_grids + ver_grids]
 
