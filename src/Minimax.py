@@ -1,5 +1,6 @@
+import numpy as np
+
 PAS = 'pass'
-INF = float('inf')
 
 class Minimax():
     def __init__(self, max_who, rules, prune=False):
@@ -17,7 +18,7 @@ class Minimax():
         return self.min_value(state, agent_id, depth, alpha, beta)[0]
 
     def max_value(self, state, agent_id, depth, alpha, beta):
-        max_eval = (-INF, PAS)
+        max_eval = (-np.inf, PAS)
         for action in state.get_legal_moves(agent_id, self.rules):
             _eval = (self.value(state.generate_successor(agent_id, action[0], action[1], self.rules), (agent_id + 1) % state.get_num_agents(), depth - 1, alpha, beta), action)
             max_eval = max([max_eval, _eval], key=lambda pair: pair[0])
@@ -27,7 +28,7 @@ class Minimax():
         return max_eval
 
     def min_value(self, state, agent_id, depth, alpha, beta):
-        min_eval = (INF, PAS)
+        min_eval = (np.inf, PAS)
         for action in state.get_legal_moves(agent_id, self.rules):
             _eval = (self.value(state.generate_successor(agent_id, action[0], action[1], self.rules), (agent_id + 1) % state.get_num_agents(), depth - 1, alpha, beta), action)
             min_eval = min([min_eval, _eval], key=lambda pair: pair[0])
@@ -46,4 +47,4 @@ class Minimax():
         return evauation
 
     def get_best_word(self, state, agent_id, depth):
-        return self.max_value(state, agent_id, depth * state.get_num_agents(), (-INF, PAS), (INF, PAS))[1]
+        return self.max_value(state, agent_id, depth * state.get_num_agents(), (-np.inf, PAS), (np.inf, PAS))[1]
