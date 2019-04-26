@@ -11,8 +11,8 @@ from src.dictionary import DICTIONARY
 
 class ScrabbleRules():
     def __init__(self, size=15, multipliers=None, blanks=False, dirty = False): # TODO bad words
-        print('Initializing Scrabble...')
         assert size % 2, 'Board length must be odd.'
+        print('Initializing Scrabble...')
         self.agent = 0  # The agent's turn
         self.turn = 1  # What turn we're on
         self.words = WORDS  # List of Scrabble words
@@ -203,7 +203,8 @@ class ScrabbleRules():
         board = state.board.copy()
         grids = self.get_grids(board)
         list_of_moves = [self.get_grid_words(*grid) for grid in grids]
-        moves = [move for moves in list_of_moves for move in moves if self.validate_move(*move, agent_id, state = state)]
+        moves = [move for moves in list_of_moves for move in moves if self.validate_move(*move, agent_id, state)]
+        moves = sorted(moves, key = lambda x: -self.dictionary[x[0]])
 
         return moves
 
