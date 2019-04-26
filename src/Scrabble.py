@@ -18,7 +18,6 @@ class ScrabbleRules():
         self.words = WORDS  # List of Scrabble words
         self.size = size  # Size of the board
         self.center = (size // 2, size // 2)
-        # self.board = np.array([''] * size ** 2, dtype=object).reshape(size, size)
         self.multipliers = multipliers if multipliers else self._default_multipliers()
         self.score_map = {'A': 1, 'B': 3, 'C': 3, 'D': 2, 'E': 1, 'F': 4, 'G': 2, 'H': 4,
                           'I': 1, 'J': 8, 'K': 5, 'L': 1, 'M': 3, 'N': 1, 'O': 1, 'P': 3,

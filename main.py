@@ -1,3 +1,4 @@
+import time
 import argparse
 from src.View import View
 from src.Scrabble import ScrabbleRules
@@ -5,7 +6,6 @@ from src.GameState import GameState
 from src.Agent import Agent
 from src.Minimax import Minimax
 from src.Expectimax import Expectimax
-import time
 
 # Parsing command line arguments
 parser = argparse.ArgumentParser()
@@ -28,10 +28,11 @@ agent_1 = Agent()
 state.add_agent(0, agent_0)
 state.add_agent(1, agent_1)
 state.place('A', [(results.size // 2, results.size // 2)], 0, rules)
+state.draw(0)
+state.draw(1)
 
 # Play
 agents = [0, 1]
-
 try:
     while True:
         for agent in agents:

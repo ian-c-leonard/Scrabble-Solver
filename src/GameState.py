@@ -31,9 +31,6 @@ class GameState:
     def get_num_agents(self):
         return self.num_agents
 
-    # def get_agent_rack(self, agent):
-    #     return agent.tiles
-
     def is_over(self):
         agents = self.agents.values()
         out_of_words = not self.bag and any([not agent.tiles for agent in agents])
@@ -44,7 +41,7 @@ class GameState:
 
         return False
 
-    def draw(self, agent_id): # TODO need to draw the tiles in the order they are
+    def draw(self, agent_id):
         '''Draw from the global game's tile bag'''
         agent = self.agents[agent_id]
         n_missing = 7 - sum(agent.tiles.values())
