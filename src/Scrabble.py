@@ -1,9 +1,9 @@
 import copy
 import numpy as np
+import pygtrie
 from random import shuffle
 from collections import Counter
 from src.constants import WORDS
-from lexpy.dawg import DAWG
 from src.Agent import Agent
 from collections import defaultdict
 from src.word_sets import WORD_SETS
@@ -24,17 +24,18 @@ class ScrabbleRules():
                           'I': 1, 'J': 8, 'K': 5, 'L': 1, 'M': 3, 'N': 1, 'O': 1, 'P': 3,
                           'Q': 10, 'R': 1, 'S': 1, 'T': 1, 'U': 1, 'V': 4, 'W': 4, 'X': 8,
                           'Y': 4, 'Z': 10, 'BLANK': 0}
-        self.dawg = self._optimize_scrabble_words()  # Optimize Scrabble words with a lookup dictionary
+        self.trie = self._optimize_scrabble_words()  # Optimize Scrabble words with a lookup dictionary
         self.dictionary = DICTIONARY
         self.word_sets = WORD_SETS or self._build_word_sets()
 
     def _optimize_scrabble_words(self):
         '''Initializes a Trie of all possible Scrabble words for optimized lookups.'''
         print('Optimizing Word Dictionary...')
-        dawg = DAWG()
-        dawg.add_all(WORDS)
+        trie = pygtrie.CharTrie()
+        for word in WORDS:
+            trie[word] = True
         print('Done Optimizing.')
-        return dawg
+        return trie
 
 
     def _build_word_sets(self):
@@ -208,7 +209,7 @@ class ScrabbleRules():
         return moves
 
     def valid_word(self, word):
-        return word.upper() in self.words
+        return self.trie.has_key(word.upper())
 
     def placement_score(self, word, indices):
         '''Returns the score of a word being placed and a specified index'''
