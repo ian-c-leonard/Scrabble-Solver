@@ -1,21 +1,20 @@
-# Python CircleCI 2.0 configuration file
+# Javascript Node CircleCI 2.0 configuration file
 #
-# Check https://circleci.com/docs/2.0/language-python/ for more details
+# Check https://circleci.com/docs/2.0/language-javascript/ for more details
 #
 version: 2
 jobs:
   build:
     docker:
       # specify the version you desire here
-      # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
-      - image: circleci/python:3.6.1
+      - image: circleci/node:7.10
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/postgres:9.4
+      # - image: circleci/mongo:3.4.4
 
-    working_directory: ~/repo
+    working_directory: ~/repo/scrabble-solver
 
     steps:
       - checkout
@@ -27,34 +26,88 @@ jobs:
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
-      - run:
-          name: install dependencies
-          command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install -r requirements.txt
+      - run: yarn install
 
       - save_cache:
           paths:
-            - ./venv
+            - node_modules
           key: v1-dependencies-{{ checksum "requirements.txt" }}
-          
+
+      
+      
+      # keep the files around for the scan job
+      - persist_to_workspace:
+          root: ..
+          paths:
+            - scrabble-solver
+      
+  # job to upload to Veracode for scanning
   veracode_scan:
-    - run:
-        name: Veracode Scan Status
-        command: ./veracode-scan.sh 01c7cb2a7490bb83e7c0d9930f264d01 2a3af12da00f77061440b3b17a62c77ff2c825959d0ed2dca5bb62b9536948e2f00b66aaf604fbfe7a4f1aa3b8928c88bebe814e291656c60b2ce6adfd020323 "Ian CircleCI Test App" "/home/circleci/repo/target/Verademo.war" $CIRCLECI_BUILD_NUM
 
-      # run tests!
-      # this example uses Django's built-in test-runner
-      # other common Python testing frameworks include pytest and nose
-      # https://pytest.org
-      # https://nose.readthedocs.io
-#       - run:
-#           name: run tests
-#           command: |
-#             . venv/bin/activate
-#             python manage.py test
+    # use a java-based image to run the Veracode API wrapper
+    docker:
+      - image: circleci/openjdk:11.0.2-jdk
+      
+    working_directory: ~/repo
+    
+    steps:
+      # get the files from the previous job
+      - attach_workspace:
+          at: .
+          
+      # 'package' for uploading to Veracode
+      - run: 
+          name: "Package for upload to Veracode"
+          #command: zip -r upload.zip nodegoat
+          command: zip -r upload.zip nodegoat -x *node_modules/*
+      
+      # grab the Veracode agent
+      - run:
+          name: "Get the Veracode agent"
+          command: |
+            wget https://repo1.maven.org/maven2/com/veracode/vosp/api/wrappers/vosp-api-wrappers-java/19.2.5.6/vosp-api-wrappers-java-19.2.5.6.jar -O VeracodeJavaAPI.jar
+            #chmod 755 VeracodeJavaAPI.jar
+      # upload for scanning
+      # env vars are used to pass login creds and set the scan name
+      - run:
+          name: "Upload to Veracode"
+          command: java -jar VeracodeJavaAPI.jar 
+              -vid 7b15e1abc8ed3afc7219f02632385217
+              -vkey 0088bff683215a998a42b8fb8f30fe6f9d6f485d123ba14ba07845189b82e22feedec09682cee1d161a9eef2e4bff4efb387704aabd6885eca8b29b540f016e0 
+              -action uploadandscan 
+              -appname "Ian CircleCI Test App" 
+              -createprofile false 
+              -version CircleCI-$CIRCLE_BUILD_NUM 
+              -filepath upload.zip
 
-#       - store_artifacts:
-#           path: test-reports
-#           destination: test-reports
+  # job to upload to Veracode for scanning
+  srcclr_scan:
+    docker:
+      # specify the version you desire here
+      - image: circleci/node:7.10
+
+    working_directory: ~/repo
+
+    steps:
+      # get the files from the previous job
+      - attach_workspace:
+          at: .
+
+      # download and run SourceClear scanner
+      - run:
+          name: "SourceClear scan"
+          command: |
+            cd scrabble-solver
+            curl -sSL https://download.sourceclear.com/ci.sh | bash
+# serial jobs - need to run 'build' before 'scan'
+workflows:
+  version: 2
+  build_and_scan:
+    jobs:
+      - build
+      - veracode_scan:
+          requires:
+            - build
+      - srcclr_scan:
+          requires:
+            - build
