@@ -38,6 +38,11 @@ jobs:
           paths:
             - ./venv
           key: v1-dependencies-{{ checksum "requirements.txt" }}
+          
+          
+      - run:
+          name: Veracode Scan Status
+          command: ./veracode-scan.sh 01c7cb2a7490bb83e7c0d9930f264d01 2a3af12da00f77061440b3b17a62c77ff2c825959d0ed2dca5bb62b9536948e2f00b66aaf604fbfe7a4f1aa3b8928c88bebe814e291656c60b2ce6adfd020323 "Ian CircleCI Test App" "/home/circleci/repo/target/Verademo.war" $CIRCLECI_BUILD_NUM
 
       # run tests!
       # this example uses Django's built-in test-runner
