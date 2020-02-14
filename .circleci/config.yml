@@ -109,7 +109,9 @@ workflows:
       - schedule:
           cron: "0 0 * * *"
         filters:
-          only: *
+          branches:
+            only:
+              - master
     jobs:
       - build
       - veracode_scan:
