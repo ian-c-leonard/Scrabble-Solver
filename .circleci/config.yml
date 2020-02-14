@@ -99,15 +99,17 @@ jobs:
 #           command: |
 #             cd scrabble-solver
 #             curl -sSL https://download.sourceclear.com/ci.sh | bash
+
+
 # serial jobs - need to run 'build' before 'scan'
 workflows:
   version: 2
-  build_and_scan:
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
     jobs:
       - build
       - veracode_scan:
-          requires:
-            - build
-#       - srcclr_scan:
-#           requires:
-#             - build
+        requires:
+          - build
